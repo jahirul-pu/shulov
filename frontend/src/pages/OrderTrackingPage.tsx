@@ -136,40 +136,15 @@ export const OrderTrackingPage: React.FC = () => {
         </div>
       )}
 
-      {/* Driver & Delivery Information Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <Truck className="w-4 h-4 text-brand-600" /> Assigned Delivery Partner
-          </h3>
-          <div className="flex items-center justify-between p-4 bg-surface-50 rounded-2xl border border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-700 font-extrabold flex items-center justify-center border border-brand-200">
-                KA
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xs text-slate-900">Kamrul Ahmed</h4>
-                <p className="text-[11px] text-slate-500">Express Rider #418 (4.95★)</p>
-              </div>
-            </div>
-            <a
-              href="tel:+8801700000000"
-              className="p-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl shadow-soft transition-colors"
-            >
-              <PhoneCall className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-brand-600" /> Destination Address
-          </h3>
-          <div className="p-4 bg-surface-50 rounded-2xl border border-slate-100 space-y-1 text-xs">
-            <span className="font-extrabold text-slate-900 block">{customerName}</span>
-            <p className="text-slate-600 leading-relaxed">{customerAddress}</p>
-            <span className="text-emerald-600 font-bold block pt-1">Slot: {deliverySlot}</span>
-          </div>
+      {/* Delivery Information Card */}
+      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+        <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-brand-600" /> Destination Address
+        </h3>
+        <div className="p-4 bg-surface-50 rounded-2xl border border-slate-100 space-y-1 text-xs">
+          <span className="font-extrabold text-slate-900 block">{customerName}</span>
+          <p className="text-slate-600 leading-relaxed">{customerAddress}</p>
+          <span className="text-emerald-600 font-bold block pt-1">Slot: {deliverySlot}</span>
         </div>
       </div>
     </div>
