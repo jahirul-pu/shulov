@@ -186,4 +186,61 @@ router.delete('/products/:id', async (req, res) => {
   }
 });
 
+// Get All Users & Lifetime Purchase History
+router.get('/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        address: true,
+        createdAt: true,
+        orders: {
+          include: {
+            items: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Calculate lifetime purchase stats for each user
+    const usersWithStats = users.map((u) => {
+      const totalOrdersCount = u.orders.length;
+      const lifetimeSpend = u.orders.reduce((sum, ord) => sum + (ord.netAmount || ord.totalAmount || 0), 0);
+      const lastOrderDate = u.orders.length > 0 ? u.orders[0].createdAt : null;
+
+      // Clean up internal email handles for phone-only registrants
+      const displayEmail = u.email && !u.email.endsWith('@shulov.user') ? u.email : '';
+
+      return {
+        id: u.id,
+        name: u.name,
+        email: displayEmail,
+        phone: u.phone || '',
+        role: u.role,
+        address: u.address || '',
+        createdAt: u.createdAt,
+        totalOrdersCount,
+        lifetimeSpend: Math.round(lifetimeSpend * 100) / 100,
+        lastOrderDate,
+        orders: u.orders,
+      };
+    });
+
+    return res.json({ users: usersWithStats });
+  } catch (error) {
+    console.error('Fetch admin users error:', error);
+    return res.status(500).json({ message: 'Failed to fetch registered users' });
+  }
+});
+
 export default router;

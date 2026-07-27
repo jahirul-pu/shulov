@@ -25,6 +25,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navItems = [
     { label: 'Analytics Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Order Dispatch & Kanban', path: '/orders', icon: ShoppingBag, badge: '5 New' },
+    { label: 'Registered Customers', path: '/users', icon: Users },
     { label: 'Products & Inventory', path: '/products', icon: Package },
     { label: 'MegaMenu & Categories', path: '/megamenu', icon: LayoutGrid },
     { label: 'Coupons & Banners', path: '/coupons', icon: Tag },
