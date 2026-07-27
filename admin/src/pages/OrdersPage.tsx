@@ -30,6 +30,8 @@ export const OrdersPage: React.FC = () => {
       prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: newStatus } : o))
     );
 
+    window.dispatchEvent(new Event('order_status_updated'));
+
     try {
       await fetch(`http://localhost:5000/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
@@ -39,6 +41,7 @@ export const OrdersPage: React.FC = () => {
         },
         body: JSON.stringify({ status: newStatus }),
       });
+      window.dispatchEvent(new Event('order_status_updated'));
     } catch (err) {
       console.error('Failed to persist order status update:', err);
     }

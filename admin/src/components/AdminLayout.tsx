@@ -28,8 +28,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  useEffect(() => {
-    // Initial fetch of pending/new orders
+  const fetchPendingOrders = () => {
     fetch('http://localhost:5000/api/admin/orders')
       .then((res) => res.json())
       .then((data) => {
@@ -40,15 +39,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchPendingOrders();
 
     const socket = io('http://localhost:5000');
-    socket.on('new-order', (newOrd) => {
-      setNewOrders((prev) => [newOrd, ...prev].slice(0, 5));
-      setUnreadCount((prev) => prev + 1);
+    socket.on('new-order', () => {
+      fetchPendingOrders();
     });
+
+    window.addEventListener('order_status_updated', fetchPendingOrders);
 
     return () => {
       socket.disconnect();
+      window.removeEventListener('order_status_updated', fetchPendingOrders);
     };
   }, []);
 
