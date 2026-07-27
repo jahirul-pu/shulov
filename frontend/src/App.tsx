@@ -6,6 +6,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { CartDrawer } from './components/common/CartDrawer';
+import { PromoPopup } from './components/common/PromoPopup';
 import { HomePage } from './pages/HomePage';
 import { CategoryPage } from './pages/CategoryPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -26,6 +27,7 @@ export const App: React.FC = () => {
             <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
               <Header />
               <CartDrawer />
+              <PromoPopup />
               <main className="flex-1 max-w-7xl w-full mx-auto px-6">
                 <Routes>
                   <Route path="/" element={<HomePage />} />

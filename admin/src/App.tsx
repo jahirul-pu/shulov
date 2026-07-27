@@ -8,6 +8,7 @@ import { CouponsPage } from './pages/CouponsPage';
 import { MegaMenuPage } from './pages/MegaMenuPage';
 import { UsersPage } from './pages/UsersPage';
 import { DeliverySettingsPage } from './pages/DeliverySettingsPage';
+import { PopupsPage } from './pages/PopupsPage';
 
 export const App: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
           <Route path="/megamenu" element={<MegaMenuPage />} />
           <Route path="/delivery-settings" element={<DeliverySettingsPage />} />
           <Route path="/coupons" element={<CouponsPage />} />
+          <Route path="/popups" element={<PopupsPage />} />
         </Routes>
       </AdminLayout>
     </Router>

@@ -15,6 +15,7 @@ import {
   LayoutGrid,
   Truck,
   X,
+  Layers,
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 
@@ -65,6 +66,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'MegaMenu & Categories', path: '/megamenu', icon: LayoutGrid },
     { label: 'Delivery & Shipping Rules', path: '/delivery-settings', icon: Truck },
     { label: 'Coupons & Banners', path: '/coupons', icon: Tag },
+    { label: 'Popup Cards', path: '/popups', icon: Layers },
   ];
 
   return (

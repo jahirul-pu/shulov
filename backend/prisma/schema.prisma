@@ -98,6 +98,17 @@ model Banner {
   isActive  Boolean  @default(true)
 }
 
+model Popup {
+  id         String   @id @default(uuid())
+  image      String
+  couponCode String?
+  ctaLabel   String   @default("Shop Now")
+  ctaLink    String   @default("/")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+
 model Order {
   id              String      @id @default(uuid())
   orderNumber     String      @unique
