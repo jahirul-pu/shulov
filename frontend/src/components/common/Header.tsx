@@ -23,7 +23,7 @@ import { MegaMenu } from './MegaMenu';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { totalItemCount, subtotal, setIsCartOpen, addToCart } = useCart();
+  const { totalItemCount, subtotal, total, setIsCartOpen, addToCart } = useCart();
   const { user, logout } = useAuth();
   const { wishlist } = useWishlist();
 
@@ -137,21 +137,34 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-8">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-soft group-hover:scale-105 transition-transform">
-            <Sparkles className="w-6 h-6 fill-white/20" />
-          </div>
-          <div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
-              Shulov<span className="text-brand-500">Fresh</span>
-            </span>
-          </div>
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-8">
+        <div className="flex items-center justify-between w-full md:w-auto">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-soft group-hover:scale-105 transition-transform">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 fill-white/20" />
+            </div>
+            <div>
+              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
+                Shulov<span className="text-brand-500">Fresh</span>
+              </span>
+            </div>
+          </Link>
 
-        {/* Categories Mega Menu Trigger */}
-        <div className="relative">
+          {/* Quick Mobile Cart Action */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="px-3 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-extrabold text-xs flex items-center gap-1.5 shadow-sm"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>৳{total.toFixed(0)}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Categories Mega Menu Trigger (Desktop Only) */}
+        <div className="relative hidden md:block">
           <button
             onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
             onMouseEnter={() => setIsMegaMenuOpen(true)}
@@ -282,8 +295,8 @@ export const Header: React.FC = () => {
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        {/* Action Buttons (Desktop Only) */}
+        <div className="hidden md:flex items-center gap-3">
           {/* Wishlist */}
           <Link
             to="/wishlist"

@@ -138,21 +138,21 @@ export const CheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="py-8 space-y-8 max-w-4xl mx-auto">
+    <div className="py-4 md:py-8 space-y-6 md:space-y-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-        <div className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold shrink-0">
           <Sparkles className="w-5 h-5 fill-white/20" />
         </div>
         <div>
-          <h1 className="font-extrabold text-2xl text-slate-900">Checkout & Order Confirmation</h1>
+          <h1 className="font-extrabold text-xl sm:text-2xl text-slate-900">Checkout & Order Confirmation</h1>
           <p className="text-xs text-slate-500">Enter your contact details, select delivery area, and choose payment option.</p>
         </div>
       </div>
 
-      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <div className="md:col-span-2 space-y-6">
           {/* Customer Contact & Address Section */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+          <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm space-y-4">
             <h3 className="font-extrabold text-slate-800 text-base flex items-center gap-2 border-b border-slate-100 pb-3">
               <UserIcon className="w-5 h-5 text-brand-600" /> Customer & Shipping Details
             </h3>

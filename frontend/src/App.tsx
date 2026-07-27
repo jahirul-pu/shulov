@@ -7,6 +7,7 @@ import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { CartDrawer } from './components/common/CartDrawer';
 import { PromoPopup } from './components/common/PromoPopup';
+import { MobileNav } from './components/common/MobileNav';
 import { HomePage } from './pages/HomePage';
 import { CategoryPage } from './pages/CategoryPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -24,11 +25,11 @@ export const App: React.FC = () => {
       <WishlistProvider>
         <CartProvider>
           <Router>
-            <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+            <div className="min-h-screen flex flex-col bg-[#F8FAFC] overflow-x-hidden">
               <Header />
               <CartDrawer />
               <PromoPopup />
-              <main className="flex-1 max-w-7xl w-full mx-auto px-6">
+              <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pb-20 md:pb-8">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/login" element={<LoginPage />} />
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
                 </Routes>
               </main>
               <Footer />
+              <MobileNav />
             </div>
           </Router>
         </CartProvider>

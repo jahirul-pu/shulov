@@ -5,6 +5,7 @@ import { Apple, Milk, Cookie, Beef, CupSoda, Wheat, ChevronRight, Sparkles, Tag 
 interface MegaMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  isMobileInline?: boolean;
 }
 
 const iconMap: Record<string, any> = {
@@ -109,7 +110,7 @@ const defaultCategories = [
   },
 ];
 
-export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
+export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, isMobileInline }) => {
   const [categories, setCategories] = useState(defaultCategories);
 
   useEffect(() => {
@@ -181,6 +182,45 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const visibleCategories = categories.filter((c) => c.isActive !== false);
+
+  if (isMobileInline) {
+    return (
+      <div className="space-y-4">
+        {visibleCategories.map((cat) => {
+          const Icon = cat.icon || iconMap[cat.slug] || Apple;
+          return (
+            <div key={cat.slug} className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50 space-y-2">
+              <Link
+                to={`/category/${cat.slug}`}
+                onClick={onClose}
+                className="flex items-center justify-between font-extrabold text-slate-900 text-sm hover:text-brand-600 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${cat.iconBg}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <span>{cat.name}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </Link>
+              <div className="pl-10 space-y-1.5 pt-1">
+                {cat.subcategories.map((sub: string) => (
+                  <Link
+                    key={sub}
+                    to={`/category/${cat.slug}?sub=${encodeURIComponent(sub)}`}
+                    onClick={onClose}
+                    className="block text-xs font-semibold text-slate-600 hover:text-brand-600 transition-colors"
+                  >
+                    {sub}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div
