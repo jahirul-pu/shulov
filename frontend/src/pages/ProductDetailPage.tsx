@@ -13,11 +13,13 @@ import {
   MessageSquare,
   Sparkles,
   Check,
+  Flame,
 } from 'lucide-react';
 import { Product, ProductVariant } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { parseProductImages, getPrimaryProductImage } from '../utils/image';
+import { ProductCard } from '../components/product/ProductCard';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -25,6 +27,7 @@ export const ProductDetailPage: React.FC = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
@@ -38,6 +41,14 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
   useEffect(() => {
+    // Fetch catalog for Relevant & Popular recommendation sections
+    fetch('http://localhost:5000/api/products/all-catalog')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.products)) setAllProducts(data.products);
+      })
+      .catch(() => {});
+
     const loadDetail = async () => {
       try {
         const res = await fetch(`http://localhost:5000/api/products/${slug}`);
@@ -48,21 +59,6 @@ export const ProductDetailPage: React.FC = () => {
           const imgs = parseProductImages(data.product.images);
           setSelectedImage(imgs[0]);
           return;
-        }
-      } catch (e) {}
-
-      try {
-        const saved = localStorage.getItem('shulov_shared_products');
-        if (saved) {
-          const parsed: any[] = JSON.parse(saved);
-          const found = parsed.find((p) => p.slug === slug || p.id === slug);
-          if (found) {
-            setProduct(found);
-            setSelectedVariant(found.variants[0]);
-            const imgs = JSON.parse(found.images || '[]');
-            setSelectedImage(imgs[0] || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80');
-            return;
-          }
         }
       } catch (e) {}
 
@@ -92,6 +88,22 @@ export const ProductDetailPage: React.FC = () => {
       setReviewSuccess(false);
     }, 2000);
   };
+
+  const relevantProducts = allProducts
+    .filter((p) => p.id !== product.id && (p.categoryId === product.categoryId || p.category?.name === product.category?.name))
+    .slice(0, 4);
+
+  const fallbackRelevant = relevantProducts.length > 0
+    ? relevantProducts
+    : allProducts.filter((p) => p.id !== product.id).slice(0, 4);
+
+  const popularProducts = allProducts
+    .filter((p) => p.id !== product.id && (p.isFlashDeal || p.rating >= 4.7))
+    .slice(0, 4);
+
+  const fallbackPopular = popularProducts.length > 0
+    ? popularProducts
+    : allProducts.filter((p) => p.id !== product.id && !fallbackRelevant.some((r) => r.id === p.id)).slice(0, 4);
 
   return (
     <div className="py-8 space-y-12">
@@ -137,11 +149,11 @@ export const ProductDetailPage: React.FC = () => {
         </div>
 
         {/* Right Column: PDP Info */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div>
             <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-1">
-              <span>Brand: <strong className="text-slate-800">{product.brand}</strong></span>
-              <span>Origin: <strong className="text-slate-800">{product.origin}</strong></span>
+              <span>Brand: <strong className="text-slate-800">{product.brand || 'Shulov Fresh'}</strong></span>
+              <span>Origin: <strong className="text-slate-800">{product.origin || 'Bangladesh'}</strong></span>
             </div>
             <h1 className="font-extrabold text-3xl text-slate-900 leading-tight">{product.name}</h1>
 
@@ -170,6 +182,22 @@ export const ProductDetailPage: React.FC = () => {
                 Save ৳{(selectedVariant.originalPrice - selectedVariant.price).toFixed(2)}
               </span>
             )}
+          </div>
+
+          {/* Product Overview Box in Top Section */}
+          <div className="bg-surface-50 p-4 rounded-2xl border border-slate-200/70 space-y-2.5">
+            <h3 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-brand-600" /> Product Overview
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              {product.description || 'Sourced fresh daily from local Bangladeshi farms & partner orchards with 100% freshness guarantee.'}
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-[11px] font-semibold text-slate-700">
+              <div><span className="text-slate-400">Category:</span> <strong className="text-slate-900">{product.category?.name || 'Fresh Produce'}</strong></div>
+              <div><span className="text-slate-400">Brand:</span> <strong className="text-slate-900">{product.brand || 'Shulov Fresh'}</strong></div>
+              <div><span className="text-slate-400">Origin:</span> <strong className="text-slate-900">{product.origin || 'Bangladesh'}</strong></div>
+              <div><span className="text-slate-400">Quality:</span> <strong className="text-emerald-600">{product.isOrganic ? '100% Organic' : 'Premium Fresh'}</strong></div>
+            </div>
           </div>
 
           {/* Variant Selector Tabs */}
@@ -230,22 +258,10 @@ export const ProductDetailPage: React.FC = () => {
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-rose-500' : ''}`} />
             </button>
           </div>
-
-          {/* Trust Guarantees */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 text-xs">
-            <div className="flex items-center gap-2.5 text-slate-700">
-              <Truck className="w-5 h-5 text-brand-500 shrink-0" />
-              <span>Home Delivery All Over Bangladesh</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-slate-700">
-              <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span>100% Quality Replacement</span>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Tabs: Description, Nutrition, Reviews */}
+      {/* Tabs: Product Description, Nutrition, Customer Reviews */}
       <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
         <div className="flex items-center gap-6 border-b border-slate-100 pb-4">
           <button
@@ -254,7 +270,7 @@ export const ProductDetailPage: React.FC = () => {
               activeTab === 'description' ? 'border-brand-500 text-brand-600' : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            Product Overview
+            Product Description
           </button>
           <button
             onClick={() => setActiveTab('nutrition')}
@@ -276,6 +292,7 @@ export const ProductDetailPage: React.FC = () => {
 
         {activeTab === 'description' && (
           <div className="prose max-w-none text-slate-600 text-sm leading-relaxed space-y-4">
+            <h3 className="font-extrabold text-slate-900 text-base">Product Description</h3>
             <p>{product.description}</p>
             <div className="bg-surface-50 p-4 rounded-2xl border border-slate-100 space-y-2">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Storage & Handling Instructions</h4>
@@ -301,7 +318,6 @@ export const ProductDetailPage: React.FC = () => {
 
         {activeTab === 'reviews' && (
           <div className="space-y-8">
-            {/* Reviews List */}
             <div className="space-y-4">
               {product.reviews && product.reviews.length > 0 ? (
                 product.reviews.map((r) => (
@@ -326,7 +342,6 @@ export const ProductDetailPage: React.FC = () => {
               )}
             </div>
 
-            {/* Write a Review */}
             <form onSubmit={handleReviewSubmit} className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4 max-w-lg">
               <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-brand-600" /> Write a Customer Review
@@ -371,6 +386,44 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Relevant Products Section */}
+      {fallbackRelevant.length > 0 && (
+        <div className="space-y-6 pt-4">
+          <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div>
+              <h2 className="font-extrabold text-xl text-slate-900 tracking-tight flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-brand-600" /> Relevant Products
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">Similar items in the grocery catalog</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {fallbackRelevant.map((relProd) => (
+              <ProductCard key={relProd.id} product={relProd} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Popular Products Section */}
+      {fallbackPopular.length > 0 && (
+        <div className="space-y-6 pt-4">
+          <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+            <div>
+              <h2 className="font-extrabold text-xl text-slate-900 tracking-tight flex items-center gap-2">
+                <Flame className="w-5 h-5 text-amber-500" /> Popular Products
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">Customer favorites & top-trending items</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {fallbackPopular.map((popProd) => (
+              <ProductCard key={popProd.id} product={popProd} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
