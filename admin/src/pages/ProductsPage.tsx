@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Leaf, Flame, AlertCircle, Check, X, Eye, EyeOff, Save, Tag, Layers, Image as ImageIcon } from 'lucide-react';
 import { getPrimaryProductImage } from '../utils/image';
 import { ImageUploader } from '../components/ImageUploader';
+import { MultiImageUploader } from '../components/MultiImageUploader';
 
 interface VariantState {
   id: string;
@@ -44,7 +45,7 @@ export const ProductsPage: React.FC = () => {
   const [newProdCategory, setNewProdCategory] = useState('Fresh Fruits & Veggies');
   const [newProdSubCategory, setNewProdSubCategory] = useState('Fresh Fruits');
   const [newProdDescription, setNewProdDescription] = useState('');
-  const [newProdImage, setNewProdImage] = useState('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80');
+  const [newProdImages, setNewProdImages] = useState<string[]>([]);
   const [newProdOrganic, setNewProdOrganic] = useState(true);
   const [newProdFlashDeal, setNewProdFlashDeal] = useState(false);
   const [newProdVariants, setNewProdVariants] = useState<VariantState[]>([
@@ -58,7 +59,7 @@ export const ProductsPage: React.FC = () => {
   const [editCategory, setEditCategory] = useState('');
   const [editSubCategory, setEditSubCategory] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [editImage, setEditImage] = useState('');
+  const [editImages, setEditImages] = useState<string[]>([]);
   const [editOrganic, setEditOrganic] = useState(false);
   const [editFlashDeal, setEditFlashDeal] = useState(false);
   const [editIsHidden, setEditIsHidden] = useState(false);
@@ -104,8 +105,13 @@ export const ProductsPage: React.FC = () => {
     setEditCategory(catName);
     setEditSubCategory(p.subcategory?.name || categorySubcategoryMap[catName]?.[0] || 'General');
     setEditDescription(p.description || '');
-    const imgArr = JSON.parse(p.images || '[]');
-    setEditImage(imgArr[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80');
+    let imgArr: string[] = [];
+    try {
+      imgArr = typeof p.images === 'string' ? JSON.parse(p.images) : p.images || [];
+    } catch {
+      imgArr = p.images ? [p.images] : [];
+    }
+    setEditImages(Array.isArray(imgArr) && imgArr.length > 0 ? imgArr : ['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80']);
     setEditOrganic(!!p.isOrganic);
     setEditFlashDeal(!!p.isFlashDeal);
     setEditIsHidden(hiddenIds.includes(p.id) || !!p.isHidden);
@@ -199,7 +205,7 @@ export const ProductsPage: React.FC = () => {
       description: editDescription,
       category: { name: editCategory, slug: catSlug },
       subcategory: { name: editSubCategory },
-      images: JSON.stringify([editImage]),
+      images: JSON.stringify(editImages.length > 0 ? editImages : ['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80']),
       isOrganic: editOrganic,
       isFlashDeal: editFlashDeal,
       isHidden: editIsHidden,
@@ -248,7 +254,7 @@ export const ProductsPage: React.FC = () => {
       brand: newProdBrand || 'Shulov Fresh',
       category: { name: newProdCategory, slug: catSlug },
       subcategory: { name: newProdSubCategory },
-      images: JSON.stringify([newProdImage]),
+      images: JSON.stringify(newProdImages.length > 0 ? newProdImages : ['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80']),
       isOrganic: newProdOrganic,
       isFlashDeal: newProdFlashDeal,
       isHidden: false,
@@ -542,14 +548,13 @@ export const ProductsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Image Upload / URL */}
+              {/* Multi Image Upload / URL */}
               <div>
-                <ImageUploader
-                  value={editImage}
-                  onChange={setEditImage}
-                  label="Product Image"
+                <MultiImageUploader
+                  values={editImages}
+                  onChange={setEditImages}
+                  label="Product Images (Gallery)"
                   required
-                  variant="compact"
                 />
               </div>
 
@@ -791,14 +796,13 @@ export const ProductsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Product Image Upload / URL */}
+              {/* Product Multi Image Upload / URL */}
               <div>
-                <ImageUploader
-                  value={newProdImage}
-                  onChange={setNewProdImage}
-                  label="Product Image"
+                <MultiImageUploader
+                  values={newProdImages}
+                  onChange={setNewProdImages}
+                  label="Product Images (Gallery)"
                   required
-                  variant="compact"
                 />
               </div>
 

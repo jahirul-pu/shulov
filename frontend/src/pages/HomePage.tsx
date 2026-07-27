@@ -67,6 +67,16 @@ export const HomePage: React.FC = () => {
               <div key={n} className="h-72 bg-slate-100 rounded-2xl animate-pulse" />
             ))}
           </div>
+        ) : products.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 space-y-3">
+            <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
+              <Sparkles className="w-8 h-8" />
+            </div>
+            <h3 className="font-extrabold text-slate-800 text-lg">No Products Available</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              The product catalog is currently empty. Add products from the Admin Panel to feature them here.
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product) => (
@@ -75,8 +85,6 @@ export const HomePage: React.FC = () => {
           </div>
         )}
       </section>
-
-
 
       {/* Freshness Commitment Guarantee */}
       <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-card flex flex-col md:flex-row items-center justify-between gap-8">
@@ -106,75 +114,4 @@ export const HomePage: React.FC = () => {
   );
 };
 
-// Fallback Mock Data
-const mockProducts: Product[] = [
-  {
-    id: 'p1',
-    name: 'Organic Red Crisp Apples',
-    slug: 'organic-red-crisp-apples',
-    description: 'Hand-picked crisp red apples directly from mountain orchards.',
-    brand: 'Orchard Fresh',
-    origin: 'Kashmir',
-    isOrganic: true,
-    isFlashDeal: true,
-    rating: 4.9,
-    reviewCount: 48,
-    images: JSON.stringify(['https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80']),
-    categoryId: 'c1',
-    variants: [
-      { id: 'v1', productId: 'p1', weight: '500g', unit: 'g', price: 2.49, originalPrice: 3.2, stock: 45, sku: 'APP-500G' },
-      { id: 'v2', productId: 'p1', weight: '1kg', unit: 'kg', price: 4.49, originalPrice: 5.99, stock: 80, sku: 'APP-1KG' },
-    ],
-  },
-  {
-    id: 'p2',
-    name: 'Farm-Fresh Whole Pasteurized Milk',
-    slug: 'farm-fresh-whole-pasteurized-milk',
-    description: '100% pure cow milk homogenised and pasteurized.',
-    brand: 'MilkyWay',
-    origin: 'Pabna Dairy',
-    isOrganic: true,
-    isFlashDeal: true,
-    rating: 4.85,
-    reviewCount: 75,
-    images: JSON.stringify(['https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=80']),
-    categoryId: 'c2',
-    variants: [
-      { id: 'v3', productId: 'p2', weight: '1 Liter Bottle', unit: 'L', price: 1.69, originalPrice: 2.1, stock: 150, sku: 'MLK-1L' },
-    ],
-  },
-  {
-    id: 'p3',
-    name: 'Omega-3 Free Range Brown Eggs',
-    slug: 'omega-3-free-range-brown-eggs',
-    description: 'Fresh brown eggs laid by cage-free hens fed on natural grain.',
-    brand: 'Happy Hens',
-    origin: 'Sylhet',
-    isOrganic: true,
-    isFlashDeal: false,
-    rating: 4.9,
-    reviewCount: 60,
-    images: JSON.stringify(['https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?auto=format&fit=crop&w=600&q=80']),
-    categoryId: 'c2',
-    variants: [
-      { id: 'v4', productId: 'p3', weight: '12 Eggs Pack', unit: 'pcs', price: 2.99, originalPrice: 3.75, stock: 100, sku: 'EGG-12P' },
-    ],
-  },
-  {
-    id: 'p4',
-    name: 'Artisan Whole Wheat Sourdough Bread',
-    slug: 'artisan-whole-wheat-sourdough-bread',
-    description: 'Slow-fermented whole wheat sourdough loaf.',
-    brand: 'Bakehouse 42',
-    origin: 'In-House Bakery',
-    isOrganic: true,
-    isFlashDeal: false,
-    rating: 4.75,
-    reviewCount: 19,
-    images: JSON.stringify(['https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80']),
-    categoryId: 'c3',
-    variants: [
-      { id: 'v5', productId: 'p4', weight: '400g Loaf', unit: 'g', price: 3.29, originalPrice: 4.0, stock: 25, sku: 'BRD-400G' },
-    ],
-  },
-];
+

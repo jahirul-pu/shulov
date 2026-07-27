@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { X, Trash2, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { getPrimaryProductImage } from '../../utils/image';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -75,7 +76,7 @@ export const CartDrawer: React.FC = () => {
                   className="flex gap-4 p-4 bg-surface-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all items-center group"
                 >
                   <img
-                    src={JSON.parse(item.product.images)[0]}
+                    src={getPrimaryProductImage(item.product.images)}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-xl bg-white border border-slate-100 shrink-0"
                   />

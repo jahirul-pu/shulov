@@ -40,6 +40,8 @@ export const ProductDetailPage: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     // Fetch catalog for Relevant & Popular recommendation sections
     fetch('http://localhost:5000/api/products/all-catalog')
@@ -50,21 +52,22 @@ export const ProductDetailPage: React.FC = () => {
       .catch(() => {});
 
     const loadDetail = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`http://localhost:5000/api/products/${slug}`);
         const data = await res.json();
         if (data.product) {
           setProduct(data.product);
-          setSelectedVariant(data.product.variants[0]);
+          setSelectedVariant(data.product.variants?.[0] || null);
           const imgs = parseProductImages(data.product.images);
           setSelectedImage(imgs[0]);
+          setLoading(false);
           return;
         }
       } catch (e) {}
 
-      setProduct(fallbackProduct);
-      setSelectedVariant(fallbackProduct.variants[0]);
-      setSelectedImage('https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80');
+      setProduct(null);
+      setLoading(false);
     };
 
     loadDetail();
@@ -72,7 +75,21 @@ export const ProductDetailPage: React.FC = () => {
     return () => window.removeEventListener('products_updated', loadDetail);
   }, [slug]);
 
-  if (!product || !selectedVariant) return <div className="p-12 text-center text-slate-500">Loading product details...</div>;
+  if (loading) return <div className="py-24 text-center text-slate-500 font-semibold text-sm">Loading product details...</div>;
+
+  if (!product || !selectedVariant) {
+    return (
+      <div className="py-24 text-center space-y-4">
+        <h2 className="font-extrabold text-2xl text-slate-800">Product Not Found</h2>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          The requested product is not available in the store catalog.
+        </p>
+        <Link to="/" className="inline-block px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors">
+          Return to Storefront
+        </Link>
+      </div>
+    );
+  }
 
   const images = parseProductImages(product.images);
 
@@ -428,27 +445,4 @@ export const ProductDetailPage: React.FC = () => {
   );
 };
 
-const fallbackProduct: Product = {
-  id: 'p1',
-  name: 'Organic Red Crisp Apples',
-  slug: 'organic-red-crisp-apples',
-  description: 'Hand-picked crisp red apples directly from organic mountain orchards. Rich in fiber, antioxidant vitamins, and natural sweetness.',
-  brand: 'Orchard Fresh',
-  origin: 'Kashmir Valley',
-  isOrganic: true,
-  isFlashDeal: true,
-  rating: 4.9,
-  reviewCount: 48,
-  images: JSON.stringify([
-    'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=600&q=80',
-  ]),
-  categoryId: 'c1',
-  variants: [
-    { id: 'v1', productId: 'p1', weight: '500g Pack', unit: 'g', price: 2.49, originalPrice: 3.2, stock: 45, sku: 'APP-500G' },
-    { id: 'v2', productId: 'p1', weight: '1kg Pack', unit: 'kg', price: 4.49, originalPrice: 5.99, stock: 80, sku: 'APP-1KG' },
-  ],
-  reviews: [
-    { id: 'r1', productId: 'p1', userId: 'u1', userName: 'Sabrina K.', rating: 5, comment: 'Crispy, sweet, and arrived in under 20 minutes! Super impressed.' },
-  ],
-};
+

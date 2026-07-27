@@ -49,7 +49,17 @@ export const Header: React.FC = () => {
     const q = searchQuery.trim().toLowerCase();
 
     if (!q) {
-      setSearchResults(fallbackSearchProducts.slice(0, 4));
+      // Fetch top 4 catalog items for search recommendation
+      fetch('http://localhost:5000/api/products/all-catalog')
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.products)) {
+            setSearchResults(data.products.filter((p: any) => !p.isHidden).slice(0, 4));
+          } else {
+            setSearchResults([]);
+          }
+        })
+        .catch(() => setSearchResults([]));
       return;
     }
 
@@ -59,20 +69,14 @@ export const Header: React.FC = () => {
       fetch(`http://localhost:5000/api/products?search=${encodeURIComponent(q)}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.products && data.products.length > 0) {
-            setSearchResults(data.products);
+          if (data.products && Array.isArray(data.products)) {
+            setSearchResults(data.products.filter((p: any) => !p.isHidden));
           } else {
-            const matches = fallbackSearchProducts.filter(
-              (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
-            );
-            setSearchResults(matches);
+            setSearchResults([]);
           }
         })
         .catch(() => {
-          const matches = fallbackSearchProducts.filter(
-            (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
-          );
-          setSearchResults(matches);
+          setSearchResults([]);
         })
         .finally(() => setIsSearching(false));
     }, 100);
@@ -454,78 +458,5 @@ export const Header: React.FC = () => {
   );
 };
 
-const fallbackSearchProducts = [
-  {
-    id: 'p1',
-    name: 'Organic Red Crisp Apples',
-    slug: 'organic-red-crisp-apples',
-    brand: 'Orchard Fresh',
-    category: 'Fresh Produce',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '1kg Pack', price: 4.49 }],
-  },
-  {
-    id: 'p2',
-    name: 'Fresh Cavendish Bananas',
-    slug: 'fresh-cavendish-bananas',
-    brand: 'TropiFresh',
-    category: 'Fresh Produce',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '1 Dozen', price: 1.89 }],
-  },
-  {
-    id: 'p3',
-    name: 'Organic Hydroponic Baby Spinach',
-    slug: 'organic-hydroponic-baby-spinach',
-    brand: 'Green Leaf Co.',
-    category: 'Fresh Produce',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '250g Pack', price: 1.99 }],
-  },
-  {
-    id: 'p4',
-    name: 'Farm-Fresh Whole Pasteurized Milk',
-    slug: 'farm-fresh-whole-pasteurized-milk',
-    brand: 'MilkyWay',
-    category: 'Dairy & Eggs',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '1 Liter Bottle', price: 1.69 }],
-  },
-  {
-    id: 'p5',
-    name: 'Omega-3 Free Range Brown Eggs',
-    slug: 'omega-3-free-range-brown-eggs',
-    brand: 'Happy Hens Farm',
-    category: 'Dairy & Eggs',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '12 Eggs Pack', price: 2.99 }],
-  },
-  {
-    id: 'p6',
-    name: 'Artisan Whole Wheat Sourdough Bread',
-    slug: 'artisan-whole-wheat-sourdough-bread',
-    brand: 'Bakehouse 42',
-    category: 'Bakery & Snacks',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '400g Loaf', price: 3.29 }],
-  },
-  {
-    id: 'p7',
-    name: 'Skinless Fresh Chicken Breast Fillet',
-    slug: 'skinless-fresh-chicken-breast-fillet',
-    brand: 'Fresh Cut Meats',
-    category: 'Meat & Seafood',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '500g Pack', price: 4.99 }],
-  },
-  {
-    id: 'p8',
-    name: 'Cold-Pressed Extra Virgin Olive Oil',
-    slug: 'cold-pressed-extra-virgin-olive-oil',
-    brand: 'Mediterra',
-    category: 'Pantry & Oil',
-    images: JSON.stringify(['https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80']),
-    variants: [{ weight: '500ml Glass Bottle', price: 7.99 }],
-  },
-];
+
 

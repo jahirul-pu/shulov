@@ -56,4 +56,23 @@ router.post('/', upload.single('image'), (req: Request, res: Response) => {
   }
 });
 
+// POST /api/upload/multiple — array of images
+router.post('/multiple', upload.array('images', 10), (req: Request, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: 'No image files provided.' });
+    }
+
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const urls = files.map((file) => `${protocol}://${host}/uploads/${file.filename}`);
+
+    res.json({ urls });
+  } catch (err: any) {
+    res.status(500).json({ message: err?.message || 'Multiple upload failed' });
+  }
+});
+
 export default router;
+

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { getPrimaryProductImage } from '../utils/image';
 
 export const CartPage: React.FC = () => {
   const {
@@ -74,7 +75,7 @@ export const CartPage: React.FC = () => {
                 <div key={item.variant.id} className="py-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <img
-                      src={JSON.parse(item.product.images)[0]}
+                      src={getPrimaryProductImage(item.product.images)}
                       alt={item.product.name}
                       className="w-16 h-16 object-cover rounded-xl border border-slate-100"
                     />
