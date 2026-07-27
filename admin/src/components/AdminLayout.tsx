@@ -13,6 +13,7 @@ import {
   LogOut,
   ShieldCheck,
   LayoutGrid,
+  Truck,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -28,6 +29,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'Registered Customers', path: '/users', icon: Users },
     { label: 'Products & Inventory', path: '/products', icon: Package },
     { label: 'MegaMenu & Categories', path: '/megamenu', icon: LayoutGrid },
+    { label: 'Delivery & Shipping Rules', path: '/delivery-settings', icon: Truck },
     { label: 'Coupons & Banners', path: '/coupons', icon: Tag },
   ];
 

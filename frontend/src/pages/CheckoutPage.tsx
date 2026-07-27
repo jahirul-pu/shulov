@@ -1,24 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Banknote, Wallet, Check, ShieldCheck, Sparkles, ArrowRight, User as UserIcon, PhoneCall, Mail } from 'lucide-react';
+import { MapPin, CreditCard, Banknote, Wallet, Check, ShieldCheck, Sparkles, ArrowRight, User as UserIcon, PhoneCall, Mail, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import confetti from 'canvas-confetti';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, total, subtotal, discountAmount, deliveryFee, tax, clearCart } = useCart();
+  const { cart, subtotal, discountAmount, tax, clearCart } = useCart();
   const { user, token } = useAuth();
 
   const [customerName, setCustomerName] = useState(user?.name || '');
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
   const [customerEmail, setCustomerEmail] = useState(() => (user?.email && !user.email.endsWith('@shulov.user') ? user.email : ''));
   const [deliveryAddress, setDeliveryAddress] = useState(user?.address || '');
+  const [deliveryZone, setDeliveryZone] = useState<'INSIDE_DHAKA' | 'OUTSIDE_DHAKA'>('INSIDE_DHAKA');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'CARD' | 'WALLET'>('COD');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync state if user loads after mount
-  React.useEffect(() => {
+  // Delivery settings from Admin API
+  const [deliverySettings, setDeliverySettings] = useState({
+    insideDhaka: 80,
+    outsideDhaka: 120,
+    notice: 'Standard delivery: Inside Dhaka ৳80, Outside Dhaka ৳120.',
+  });
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/settings/delivery')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) {
+          setDeliverySettings({
+            insideDhaka: data.settings.insideDhaka ?? 80,
+            outsideDhaka: data.settings.outsideDhaka ?? 120,
+            notice: data.settings.notice || '',
+          });
+        }
+      })
+      .catch((err) => console.error('Failed to load delivery settings:', err));
+  }, []);
+
+  // Sync user details when auth loads
+  useEffect(() => {
     if (user) {
       if (!customerName) setCustomerName(user.name || '');
       if (!customerPhone) setCustomerPhone(user.phone || '');
@@ -26,6 +49,9 @@ export const CheckoutPage: React.FC = () => {
       if (!deliveryAddress) setDeliveryAddress(user.address || '');
     }
   }, [user]);
+
+  const activeDeliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? deliverySettings.outsideDhaka : deliverySettings.insideDhaka;
+  const computedNetTotal = Math.round((subtotal - discountAmount + activeDeliveryFee + tax) * 100) / 100;
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,17 +70,19 @@ export const CheckoutPage: React.FC = () => {
         customerPhone,
         customerEmail,
         deliveryAddress,
-        deliverySlot: 'Today, 4:00 PM - 6:00 PM',
+        deliveryZone,
+        deliveryFee: activeDeliveryFee,
+        deliverySlot: 'Standard Express Dispatch',
         paymentMethod,
       };
 
-      const token = localStorage.getItem('shulov_token') || '';
+      const tokenStr = localStorage.getItem('shulov_token') || '';
 
       const res = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${tokenStr}`,
         },
         body: JSON.stringify(orderData),
       });
@@ -66,7 +94,6 @@ export const CheckoutPage: React.FC = () => {
 
       const orderNum = data.order.orderNumber;
 
-      // Confetti celebration
       confetti({
         particleCount: 120,
         spread: 70,
@@ -91,7 +118,7 @@ export const CheckoutPage: React.FC = () => {
         </div>
         <div>
           <h1 className="font-extrabold text-2xl text-slate-900">Checkout & Order Confirmation</h1>
-          <p className="text-xs text-slate-500">Enter your contact details, delivery address, and choose payment option.</p>
+          <p className="text-xs text-slate-500">Enter your contact details, select delivery area, and choose payment option.</p>
         </div>
       </div>
 
@@ -113,7 +140,7 @@ export const CheckoutPage: React.FC = () => {
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <input
                     type="text"
-                    placeholder="e.g. Rahim Chowdhury"
+                    placeholder="e.g. Jahirul Islam"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 text-xs font-semibold bg-surface-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
@@ -131,7 +158,7 @@ export const CheckoutPage: React.FC = () => {
                   <PhoneCall className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <input
                     type="tel"
-                    placeholder="e.g. +880 1700-000000"
+                    placeholder="e.g. +880 1900-000000"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 text-xs font-semibold bg-surface-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
@@ -145,13 +172,13 @@ export const CheckoutPage: React.FC = () => {
             <div className="space-y-1">
               <label className="block text-xs font-bold text-slate-700 flex items-center justify-between">
                 <span>Email Address</span>
-                <span className="text-[11px] font-normal text-slate-400 font-semibold">(Optional for digital invoice)</span>
+                <span className="text-[11px] text-slate-400 font-semibold">(Optional for digital invoice)</span>
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
                   type="email"
-                  placeholder="e.g. rahim@example.com"
+                  placeholder="e.g. user@example.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 text-xs font-semibold bg-surface-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
@@ -174,6 +201,57 @@ export const CheckoutPage: React.FC = () => {
                   className="w-full pl-9 pr-3 py-2.5 text-xs font-semibold bg-surface-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
                   required
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Delivery Zone Selection */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+            <h3 className="font-extrabold text-slate-800 text-base flex items-center gap-2">
+              <Truck className="w-5 h-5 text-brand-600" /> Select Delivery Category / Area
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Inside Dhaka Option */}
+              <div
+                onClick={() => setDeliveryZone('INSIDE_DHAKA')}
+                className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
+                  deliveryZone === 'INSIDE_DHAKA'
+                    ? 'border-emerald-500 bg-emerald-50/70 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white font-extrabold flex items-center justify-center text-xs">
+                    Dhaka
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-slate-900">Inside Dhaka</h4>
+                    <p className="text-[11px] text-slate-500">Metropolitan Express Fleet</p>
+                  </div>
+                </div>
+                <span className="font-extrabold text-sm text-emerald-700">৳{deliverySettings.insideDhaka}.00</span>
+              </div>
+
+              {/* Outside Dhaka Option */}
+              <div
+                onClick={() => setDeliveryZone('OUTSIDE_DHAKA')}
+                className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
+                  deliveryZone === 'OUTSIDE_DHAKA'
+                    ? 'border-purple-500 bg-purple-50/70 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-600 text-white font-extrabold flex items-center justify-center text-xs">
+                    BD
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-slate-900">Outside Dhaka</h4>
+                    <p className="text-[11px] text-slate-500">Divisional & District Fleet</p>
+                  </div>
+                </div>
+                <span className="font-extrabold text-sm text-purple-700">৳{deliverySettings.outsideDhaka}.00</span>
               </div>
             </div>
           </div>
@@ -215,7 +293,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-xs text-slate-900">Credit / Debit Card (Visa, MasterCard)</h4>
-                    <p className="text-[11px] text-slate-500">Instant 256-bit SSL encrypted online payment.</p>
+                    <p className="text-[11px] text-slate-500">Instant online card payment.</p>
                   </div>
                 </div>
                 {paymentMethod === 'CARD' && <Check className="w-5 h-5 text-brand-600" />}
@@ -233,7 +311,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-xs text-slate-900">Mobile Wallet (bKash / Nagad / Rocket)</h4>
-                    <p className="text-[11px] text-slate-500">Scan QR code for instant merchant payment.</p>
+                    <p className="text-[11px] text-slate-500">Instant mobile wallet checkout.</p>
                   </div>
                 </div>
                 {paymentMethod === 'WALLET' && <Check className="w-5 h-5 text-brand-600" />}
@@ -242,33 +320,70 @@ export const CheckoutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Order Summary & Submit */}
+        {/* Right Sidebar Summary */}
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-base text-slate-800 border-b border-slate-100 pb-3">Final Breakdown</h3>
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4 sticky top-24">
+            <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-3">Order Summary</h3>
 
-            <div className="space-y-2 text-xs text-slate-600">
-              <div className="flex justify-between"><span>Items Subtotal</span><span className="font-bold text-slate-800">৳{subtotal.toFixed(2)}</span></div>
-              {discountAmount > 0 && <div className="flex justify-between text-emerald-600 font-bold"><span>Discount</span><span>-৳{discountAmount.toFixed(2)}</span></div>}
-              <div className="flex justify-between"><span>Delivery Fee</span><span className="font-bold text-slate-800">৳{deliveryFee.toFixed(2)}</span></div>
-              <div className="flex justify-between text-lg font-extrabold text-slate-900 pt-3 border-t border-slate-200">
-                <span>Total Payable</span>
-                <span className="text-brand-600">৳{total.toFixed(2)}</span>
+            {/* Cart Items List */}
+            <div className="divide-y divide-slate-100 max-h-56 overflow-y-auto space-y-2 text-xs">
+              {cart.map((item) => (
+                <div key={item.variant.id} className="flex items-center justify-between pt-2">
+                  <div>
+                    <span className="font-bold text-slate-900 block">{item.product.name}</span>
+                    <span className="text-[11px] text-slate-400">
+                      {item.quantity}x {item.variant.weight}
+                    </span>
+                  </div>
+                  <span className="font-extrabold text-slate-900">৳{(item.variant.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Price Calculations */}
+            <div className="space-y-2 pt-3 border-t border-slate-100 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Items Subtotal:</span>
+                <span className="font-semibold text-slate-900">৳{subtotal.toFixed(2)}</span>
+              </div>
+
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-bold">
+                  <span>Coupon Discount:</span>
+                  <span>-৳{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-slate-600">
+                <span>
+                  Delivery Charge ({deliveryZone === 'OUTSIDE_DHAKA' ? 'Outside Dhaka' : 'Inside Dhaka'}):
+                </span>
+                <span className="font-extrabold text-slate-900">৳{activeDeliveryFee.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-slate-600">
+                <span>VAT / Tax (5%):</span>
+                <span className="font-semibold text-slate-900">৳{tax.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-base font-extrabold text-slate-900 pt-3 border-t border-slate-100">
+                <span>Total Amount:</span>
+                <span className="text-brand-600">৳{computedNetTotal.toFixed(2)}</span>
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-extrabold text-sm rounded-2xl shadow-soft flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+              disabled={isSubmitting || cart.length === 0}
+              className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl shadow-soft flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
-              {isSubmitting ? 'Placing Order...' : 'Place Grocery Order'}
+              <span>{isSubmitting ? 'Placing Order...' : 'Confirm & Place Order'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium pt-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>Backed by Shulov Fresh Guarantee</span>
+            <div className="flex items-center gap-2 text-[10px] text-slate-400 justify-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Safe & Encrypted Grocery Checkout</span>
             </div>
           </div>
         </div>

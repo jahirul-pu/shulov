@@ -71,13 +71,6 @@ export const OrderTrackingPage: React.FC = () => {
           <h1 className="font-extrabold text-3xl">Order #{orderId}</h1>
           <p className="text-xs text-slate-300">Guaranteed Fresh Delivery by Shulov Express Fleet</p>
         </div>
-
-        {/* Live ETA Box */}
-        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center min-w-[180px]">
-          <span className="text-[11px] uppercase font-bold text-brand-300 block">Estimated Arrival</span>
-          <span className="font-extrabold text-4xl text-white block mt-1">{etaMinutes} mins</span>
-          <span className="text-[10px] text-slate-300 block">Rider is 1.4 km away</span>
-        </div>
       </div>
 
       {/* Progress Timeline Nodes */}

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../prisma';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { getStoredDeliverySettings } from './settings.routes';
 
 const router = Router();
 
@@ -182,7 +183,9 @@ router.post('/', async (req: AuthRequest, res) => {
       }
     }
 
-    const deliveryFee = totalAmount >= 35 ? 0 : 2.99;
+    const { deliveryZone } = req.body;
+    const settings = getStoredDeliverySettings();
+    const deliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? settings.outsideDhaka : settings.insideDhaka;
     const tax = Math.round(totalAmount * 0.05 * 100) / 100;
     const netAmount = Math.round((totalAmount - discountAmount + deliveryFee + tax) * 100) / 100;
 
