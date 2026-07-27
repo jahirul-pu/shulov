@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, MapPin, DollarSign, Save, CheckCircle2, AlertCircle, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Truck, MapPin, DollarSign, Save, CheckCircle2, AlertCircle, ShieldCheck, HelpCircle, Bell, Mail, MessageSquare } from 'lucide-react';
 
 export const DeliverySettingsPage: React.FC = () => {
   const [insideDhaka, setInsideDhaka] = useState<number>(80);
@@ -13,8 +13,15 @@ export const DeliverySettingsPage: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState('');
   const [saveError, setSaveError] = useState('');
 
+  // Notification settings state
+  const [smsEnabled, setSmsEnabled] = useState(true);
+  const [emailEnabled, setEmailEnabled] = useState(true);
+  const [notifLoading, setNotifLoading] = useState(true);
+  const [notifSaveMsg, setNotifSaveMsg] = useState('');
+
   useEffect(() => {
     fetchSettings();
+    fetchNotificationSettings();
   }, []);
 
   const fetchSettings = () => {
@@ -32,6 +39,50 @@ export const DeliverySettingsPage: React.FC = () => {
       })
       .catch((err) => console.error('Failed to fetch delivery settings:', err))
       .finally(() => setIsLoading(false));
+  };
+
+  const fetchNotificationSettings = () => {
+    setNotifLoading(true);
+    fetch('http://localhost:5000/api/settings/admin/notifications')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) {
+          setSmsEnabled(data.settings.smsEnabled ?? true);
+          setEmailEnabled(data.settings.emailEnabled ?? true);
+        }
+      })
+      .catch((err) => console.error('Failed to fetch notification settings:', err))
+      .finally(() => setNotifLoading(false));
+  };
+
+  const handleToggleNotification = async (channel: 'sms' | 'email', newValue: boolean) => {
+    if (channel === 'sms') setSmsEnabled(newValue);
+    if (channel === 'email') setEmailEnabled(newValue);
+
+    try {
+      const body = channel === 'sms'
+        ? { smsEnabled: newValue }
+        : { emailEnabled: newValue };
+
+      const res = await fetch('http://localhost:5000/api/settings/admin/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('shulov_token') || ''}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setNotifSaveMsg(`${channel === 'sms' ? 'SMS' : 'Email'} notifications ${newValue ? 'enabled' : 'disabled'}`);
+        setTimeout(() => setNotifSaveMsg(''), 2500);
+      }
+    } catch (err) {
+      console.error('Toggle notification error:', err);
+      // Revert on failure
+      if (channel === 'sms') setSmsEnabled(!newValue);
+      if (channel === 'email') setEmailEnabled(!newValue);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -233,6 +284,116 @@ export const DeliverySettingsPage: React.FC = () => {
           </div>
         </form>
       )}
+
+      {/* ── Order Notifications Section ── */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-blue-600" /> Order Notifications
+          </h2>
+          {notifSaveMsg && (
+            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> {notifSaveMsg}
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-slate-500 -mt-2">
+          Control which notification channels are used when a customer places an order. Notifications are sent based on available customer contact info.
+        </p>
+
+        {notifLoading ? (
+          <div className="p-8 text-center text-xs font-bold text-slate-400">Loading notification settings...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* SMS Toggle */}
+            <div className={`p-5 rounded-2xl border transition-all ${smsEnabled ? 'bg-sky-50/60 border-sky-200/80' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${smsEnabled ? 'bg-sky-600 text-white' : 'bg-slate-300 text-slate-500'}`}>
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">SMS Notifications</h3>
+                    <span className="text-[10px] text-slate-500 font-medium">Send order confirmation via SMS</span>
+                  </div>
+                </div>
+
+                {/* Toggle Switch */}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={smsEnabled}
+                  onClick={() => handleToggleNotification('sms', !smsEnabled)}
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${smsEnabled ? 'bg-sky-600' : 'bg-slate-300'}`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${smsEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                  />
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-start gap-1.5">
+                <HelpCircle className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                <p className="text-[10px] text-slate-400">
+                  {smsEnabled
+                    ? 'Customers with a phone number will receive an SMS with their order number and total.'
+                    : 'SMS notifications are disabled. No SMS will be sent on order placement.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Email Toggle */}
+            <div className={`p-5 rounded-2xl border transition-all ${emailEnabled ? 'bg-violet-50/60 border-violet-200/80' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${emailEnabled ? 'bg-violet-600 text-white' : 'bg-slate-300 text-slate-500'}`}>
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">Email Notifications</h3>
+                    <span className="text-[10px] text-slate-500 font-medium">Send order confirmation via email</span>
+                  </div>
+                </div>
+
+                {/* Toggle Switch */}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={emailEnabled}
+                  onClick={() => handleToggleNotification('email', !emailEnabled)}
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${emailEnabled ? 'bg-violet-600' : 'bg-slate-300'}`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${emailEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                  />
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-start gap-1.5">
+                <HelpCircle className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                <p className="text-[10px] text-slate-400">
+                  {emailEnabled
+                    ? 'Customers with a real email will receive a rich HTML order summary with items, prices, and delivery details.'
+                    : 'Email notifications are disabled. No emails will be sent on order placement.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Provider Status Notice */}
+        <div className="flex items-start gap-2 p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
+          <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[11px] font-bold text-amber-800">Provider Status: Console Logging</p>
+            <p className="text-[10px] text-amber-600 mt-0.5">
+              Notifications are currently logged to the backend console. To send real SMS/emails, configure provider credentials in your <code className="px-1 py-0.5 bg-amber-100 rounded font-mono">.env</code> file.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+

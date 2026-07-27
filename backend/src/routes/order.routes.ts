@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../prisma';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 import { getStoredDeliverySettings } from './settings.routes';
+import { sendOrderConfirmation } from '../services/notificationService';
 
 const router = Router();
 
@@ -234,6 +235,9 @@ router.post('/', async (req: AuthRequest, res) => {
     if (io) {
       io.emit('new-order', order);
     }
+
+    // Fire-and-forget: send SMS/email order confirmation (async, non-blocking)
+    sendOrderConfirmation(order, customerPhone, customerEmail);
 
     return res.status(201).json({ order });
   } catch (error) {
