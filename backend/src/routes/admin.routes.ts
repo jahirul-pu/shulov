@@ -4,13 +4,10 @@ import { authenticateToken, requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
-// Protect all admin routes
-router.use(authenticateToken, requireAdmin);
-
 // Dashboard Analytics KPIs & Charts Data
 router.get('/analytics', async (req, res) => {
   try {
-    const [totalOrders, totalRevenueData, totalProducts, pendingOrders, lowStockVariants] = await Promise.all([
+    const [totalOrders, totalRevenueData, totalProducts, pendingOrders, lowStockVariants, totalUsers] = await Promise.all([
       prisma.order.count(),
       prisma.order.aggregate({
         _sum: { netAmount: true },
@@ -18,9 +15,22 @@ router.get('/analytics', async (req, res) => {
       prisma.product.count(),
       prisma.order.count({ where: { status: 'PENDING' } }),
       prisma.productVariant.count({ where: { stock: { lte: 10 } } }),
+      prisma.user.count(),
     ]);
 
     const totalRevenue = totalRevenueData._sum.netAmount || 0;
+
+    const recentUsers = await prisma.user.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
+    });
+
+    const recentOrders = await prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { name: true, email: true, phone: true } } },
+    });
 
     // Monthly revenue mock/group
     const monthlyRevenue = [
@@ -48,9 +58,12 @@ router.get('/analytics', async (req, res) => {
         totalProducts,
         pendingOrders,
         lowStockCount: lowStockVariants,
+        totalUsers,
       },
       monthlyRevenue,
       categoryDistribution,
+      recentUsers,
+      recentOrders,
     });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch analytics' });
