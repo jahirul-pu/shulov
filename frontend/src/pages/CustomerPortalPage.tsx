@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 export const CustomerPortalPage: React.FC = () => {
-  const { user, token } = useAuth();
+  const { user, token, updateUser } = useAuth();
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'addresses' | 'settings'>('overview');
 
@@ -96,10 +96,32 @@ export const CustomerPortalPage: React.FC = () => {
     setIsAddAddressOpen(false);
   };
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSavedNotice(true);
-    setTimeout(() => setIsSavedNotice(false), 2500);
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          address: addresses[0]?.details || '',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.user) {
+        updateUser(data.user);
+        setIsSavedNotice(true);
+        setTimeout(() => setIsSavedNotice(false), 2500);
+      }
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    }
   };
 
   const activeOrder = orders.find((o) => o.status === 'PENDING' || o.status === 'PROCESSING' || o.status === 'PACKED' || o.status === 'OUT_FOR_DELIVERY');

@@ -2,18 +2,30 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, CreditCard, Banknote, Wallet, Check, ShieldCheck, Sparkles, ArrowRight, User as UserIcon, PhoneCall, Mail } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import confetti from 'canvas-confetti';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cart, total, subtotal, discountAmount, deliveryFee, tax, clearCart } = useCart();
+  const { user, token } = useAuth();
 
-  const [customerName, setCustomerName] = useState('Rahim Chowdhury');
-  const [customerPhone, setCustomerPhone] = useState('+880 1812-345678');
-  const [customerEmail, setCustomerEmail] = useState('rahim@example.com');
-  const [deliveryAddress, setDeliveryAddress] = useState('House 42, Road 11, Banani, Dhaka (1213)');
+  const [customerName, setCustomerName] = useState(user?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [customerEmail, setCustomerEmail] = useState(() => (user?.email && !user.email.endsWith('@shulov.user') ? user.email : ''));
+  const [deliveryAddress, setDeliveryAddress] = useState(user?.address || '');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'CARD' | 'WALLET'>('COD');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync state if user loads after mount
+  React.useEffect(() => {
+    if (user) {
+      if (!customerName) setCustomerName(user.name || '');
+      if (!customerPhone) setCustomerPhone(user.phone || '');
+      if (!customerEmail && user.email && !user.email.endsWith('@shulov.user')) setCustomerEmail(user.email);
+      if (!deliveryAddress) setDeliveryAddress(user.address || '');
+    }
+  }, [user]);
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
