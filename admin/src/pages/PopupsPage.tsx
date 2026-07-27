@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Plus, Trash2, X, Link as LinkIcon, Tag, Image as ImageIcon, ToggleLeft, ToggleRight, Copy, Check } from 'lucide-react';
+import { ImageUploader } from '../components/ImageUploader';
 
 interface PopupData {
   id: string;
@@ -264,28 +265,14 @@ export const PopupsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreate} className="space-y-4">
-              {/* Image URL */}
-              <div className="space-y-1">
-                <label className="block text-xs font-extrabold text-slate-700 flex items-center gap-1">
-                  <ImageIcon className="w-3.5 h-3.5 text-brand-500" /> Image URL <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="url"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://example.com/banner.jpg"
-                  className="w-full px-3 py-2.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
-                  required
-                />
-                {image && (
-                  <img
-                    src={image}
-                    alt="Preview"
-                    className="w-full h-36 object-cover rounded-xl mt-2 border border-slate-100"
-                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                  />
-                )}
-              </div>
+              {/* Image Upload / URL */}
+              <ImageUploader
+                value={image}
+                onChange={setImage}
+                label="Popup Image"
+                required
+                variant="full"
+              />
 
               {/* Coupon Code (optional) */}
               <div className="space-y-1">

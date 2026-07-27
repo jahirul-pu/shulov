@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Leaf, Flame, AlertCircle, Check, X, Eye, EyeOff, Save, Tag, Layers, Image as ImageIcon } from 'lucide-react';
 import { getPrimaryProductImage } from '../utils/image';
+import { ImageUploader } from '../components/ImageUploader';
 
 interface VariantState {
   id: string;
@@ -541,24 +542,15 @@ export const ProductsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Image URL with Preview */}
+              {/* Image Upload / URL */}
               <div>
-                <label className="block font-extrabold text-slate-700 mb-1 uppercase tracking-wider">
-                  Product Image URL
-                </label>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="url"
-                    value={editImage}
-                    onChange={(e) => setEditImage(e.target.value)}
-                    className="flex-1 p-2.5 bg-surface-50 border border-slate-200 rounded-xl font-semibold text-xs"
-                    placeholder="https://images.unsplash.com/..."
-                    required
-                  />
-                  {editImage && (
-                    <img src={editImage} alt="Preview" className="w-10 h-10 rounded-xl object-cover border shrink-0" />
-                  )}
-                </div>
+                <ImageUploader
+                  value={editImage}
+                  onChange={setEditImage}
+                  label="Product Image"
+                  required
+                  variant="compact"
+                />
               </div>
 
               {/* Dynamic Multi-Variant Editor Section */}
@@ -799,23 +791,15 @@ export const ProductsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Product Image URL */}
+              {/* Product Image Upload / URL */}
               <div>
-                <label className="block font-extrabold text-slate-700 mb-1 uppercase tracking-wider">
-                  Product Image URL
-                </label>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="url"
-                    value={newProdImage}
-                    onChange={(e) => setNewProdImage(e.target.value)}
-                    className="flex-1 p-2.5 border border-slate-200 rounded-xl font-semibold text-xs"
-                    required
-                  />
-                  {newProdImage && (
-                    <img src={newProdImage} alt="Preview" className="w-10 h-10 rounded-xl object-cover border shrink-0" />
-                  )}
-                </div>
+                <ImageUploader
+                  value={newProdImage}
+                  onChange={setNewProdImage}
+                  label="Product Image"
+                  required
+                  variant="compact"
+                />
               </div>
 
               {/* Multi-Variant Section */}
