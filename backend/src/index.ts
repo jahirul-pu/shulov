@@ -1,9 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
@@ -14,7 +16,6 @@ import settingsRoutes from './routes/settings.routes';
 import popupRoutes from './routes/popup.routes';
 import uploadRoutes from './routes/upload.routes';
 
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
