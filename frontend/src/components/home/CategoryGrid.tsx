@@ -55,37 +55,36 @@ export const CategoryGrid: React.FC = () => {
   ];
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-extrabold text-2xl text-slate-900 tracking-tight">Shop by Grocery Category</h2>
-          <p className="text-xs text-slate-500 mt-1">Explore our farm-fresh produce and daily household departments.</p>
+          <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">Shop by Grocery Category</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5">Explore our farm-fresh produce and daily household departments.</p>
         </div>
         <Link
           to="/category/fresh-produce"
           className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 group"
         >
           <span>View All Categories</span>
-          <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {categories.map((cat) => {
-          const Icon = cat.icon;
           return (
             <Link
               key={cat.slug}
               to={`/category/${cat.slug}`}
-              className={`p-4 rounded-2xl border transition-all duration-300 hover:-translate-y-1.5 flex flex-col items-center text-center group ${cat.bgColor}`}
+              className={`p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 hover:-translate-y-1 flex flex-col items-center text-center group ${cat.bgColor}`}
             >
-              <div className="w-16 h-16 rounded-full bg-white shadow-soft overflow-hidden p-1 mb-3 group-hover:scale-110 transition-transform">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-soft overflow-hidden p-0.5 mb-2 group-hover:scale-105 transition-transform">
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-full" />
               </div>
-              <h3 className="font-bold text-xs text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-1">
+              <h3 className="font-bold text-[11px] sm:text-xs text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-1">
                 {cat.name}
               </h3>
-              <span className="text-[10px] font-semibold text-slate-400 mt-1">{cat.itemCount}</span>
+              <span className="text-[9px] font-semibold text-slate-400 mt-0.5">{cat.itemCount}</span>
             </Link>
           );
         })}

@@ -23,48 +23,49 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ products }) => {
   }, []);
 
   const flashProducts = products.filter((p) => p.isFlashDeal || p.variants.some((v) => v.originalPrice));
+  const displayProducts = (flashProducts.length > 0 ? flashProducts : products).slice(0, 4);
 
   return (
-    <section className="bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-emerald-500/10 rounded-3xl p-8 border border-amber-200/80 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-200/60 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <Flame className="w-7 h-7 fill-white" />
+    <section className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
+            <Flame className="w-5 h-5 fill-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-extrabold text-2xl text-slate-900 tracking-tight">Today's Flash Deals</h2>
-              <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-amber-500 text-white rounded-full uppercase tracking-wider">
+              <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">Today's Flash Deals</h2>
+              <span className="text-[9px] font-extrabold px-2 py-0.5 bg-amber-500 text-white rounded-full uppercase tracking-wider">
                 Up to 40% Off
               </span>
             </div>
-            <p className="text-xs text-slate-600 mt-0.5">Limited stock items available at wholesale prices.</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Limited stock items available at wholesale prices.</p>
           </div>
         </div>
 
         {/* Countdown Timer */}
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-amber-200 shadow-sm">
-          <Clock className="w-4 h-4 text-amber-600" />
+        <div className="flex items-center gap-1.5 bg-amber-50/80 px-3 py-1.5 rounded-xl border border-amber-200/70 shrink-0">
+          <Clock className="w-3.5 h-3.5 text-amber-600" />
           <span className="text-xs font-bold text-slate-700">Ends in:</span>
-          <div className="flex items-center gap-1 font-extrabold text-sm text-amber-700">
-            <span className="px-2 py-1 bg-amber-500 text-white rounded-lg min-w-[28px] text-center shadow-xs">
+          <div className="flex items-center gap-1 font-extrabold text-xs text-amber-700">
+            <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded-md min-w-[24px] text-center shadow-xs">
               {String(timeLeft.hours).padStart(2, '0')}
             </span>
             <span>:</span>
-            <span className="px-2 py-1 bg-amber-500 text-white rounded-lg min-w-[28px] text-center shadow-xs">
+            <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded-md min-w-[24px] text-center shadow-xs">
               {String(timeLeft.minutes).padStart(2, '0')}
             </span>
             <span>:</span>
-            <span className="px-2 py-1 bg-amber-500 text-white rounded-lg min-w-[28px] text-center shadow-xs animate-pulse">
+            <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded-md min-w-[24px] text-center shadow-xs animate-pulse">
               {String(timeLeft.seconds).padStart(2, '0')}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Product Cards Grid */}
+      {/* Product Cards Grid — Standard 4-column layout matching regular product grids */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {flashProducts.slice(0, 4).map((product) => (
+        {displayProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
