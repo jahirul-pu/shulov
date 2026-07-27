@@ -166,6 +166,7 @@ export const OrdersPage: React.FC = () => {
               <div className="space-y-1">
                 <span className="font-bold text-slate-800">Customer Details:</span>
                 <p className="font-semibold text-slate-900">{selectedOrderForInvoice.user?.name || 'Customer'}</p>
+                <p className="text-slate-700 font-bold">Phone: {selectedOrderForInvoice.user?.phone || selectedOrderForInvoice.customerPhone || 'N/A'}</p>
                 <p className="text-slate-500">{selectedOrderForInvoice.deliveryAddress || 'Dhaka, Bangladesh'}</p>
               </div>
 
