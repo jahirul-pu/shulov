@@ -26,35 +26,19 @@ export const CategoryPage: React.FC = () => {
       try {
         const res = await fetch('http://localhost:5000/api/products/all-catalog');
         const data = await res.json();
-        if (Array.isArray(data.products) && data.products.length > 0) {
+        if (Array.isArray(data.products)) {
           setProducts(data.products);
           setLoading(false);
           return;
         }
-      } catch (e) {}
-
-      try {
-        const saved = localStorage.getItem('shulov_shared_products');
-        if (saved) {
-          setProducts(JSON.parse(saved));
-          setLoading(false);
-          return;
-        }
-      } catch (e) {}
-
-      setProducts(mockCategoryProducts);
+      } catch (e) {
+        console.error('Failed to load category products:', e);
+      }
       setLoading(false);
     };
 
     loadProducts();
-
-    window.addEventListener('storage', loadProducts);
-    window.addEventListener('products_updated', loadProducts);
-    return () => {
-      window.removeEventListener('storage', loadProducts);
-      window.removeEventListener('products_updated', loadProducts);
-    };
-  }, [slug, search, isOrganicOnly]);
+  }, [slug, search]);
 
   const hiddenProductIds: string[] = (() => {
     try {

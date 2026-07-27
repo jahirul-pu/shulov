@@ -16,36 +16,19 @@ export const HomePage: React.FC = () => {
       try {
         const res = await fetch('http://localhost:5000/api/products/all-catalog');
         const data = await res.json();
-        if (Array.isArray(data.products) && data.products.length > 0) {
+        if (Array.isArray(data.products)) {
           const visible = data.products.filter((p: any) => !p.isHidden);
           setProducts(visible);
           setLoading(false);
           return;
         }
-      } catch (e) {}
-
-      try {
-        const saved = localStorage.getItem('shulov_shared_products');
-        if (saved) {
-          const parsed: any[] = JSON.parse(saved);
-          const visible = parsed.filter((p) => !p.isHidden);
-          setProducts(visible);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {}
-
-      setProducts(mockProducts);
+      } catch (e) {
+        console.error('Failed to load home products:', e);
+      }
       setLoading(false);
     };
 
     loadHomeProducts();
-    window.addEventListener('storage', loadHomeProducts);
-    window.addEventListener('products_updated', loadHomeProducts);
-    return () => {
-      window.removeEventListener('storage', loadHomeProducts);
-      window.removeEventListener('products_updated', loadHomeProducts);
-    };
   }, []);
 
   return (

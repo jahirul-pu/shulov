@@ -270,37 +270,88 @@ router.get('/all-catalog', (req, res) => {
 });
 
 // Update Product (PUT /api/products/:id)
-router.put('/:id', (req, res) => {
-  const { id } = req.params;
-  const updateData = req.body;
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
 
-  const index = customProductsCatalog.findIndex((p) => p.id === id);
-  if (index > -1) {
-    customProductsCatalog[index] = {
-      ...customProductsCatalog[index],
-      ...updateData,
-    };
-    return res.json({ message: 'Product updated successfully', product: customProductsCatalog[index] });
+    const index = customProductsCatalog.findIndex((p) => p.id === id || p.slug === id);
+    if (index > -1) {
+      customProductsCatalog[index] = {
+        ...customProductsCatalog[index],
+        ...updateData,
+      };
+    } else {
+      customProductsCatalog.unshift({ id, ...updateData });
+    }
+
+    try {
+      const dbProd = await prisma.product.findFirst({ where: { OR: [{ id }, { slug: id }] } });
+      if (dbProd) {
+        await prisma.product.update({
+          where: { id: dbProd.id },
+          data: {
+            ...(updateData.name ? { name: updateData.name } : {}),
+            ...(updateData.description ? { description: updateData.description } : {}),
+            ...(updateData.brand ? { brand: updateData.brand } : {}),
+            ...(updateData.isOrganic !== undefined ? { isOrganic: Boolean(updateData.isOrganic) } : {}),
+            ...(updateData.isFlashDeal !== undefined ? { isFlashDeal: Boolean(updateData.isFlashDeal) } : {}),
+          },
+        });
+      }
+    } catch (e) {}
+
+    return res.json({ message: 'Product updated successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to update product' });
   }
-
-  // If not existing, push to memory catalog
-  const newProduct = { id, ...updateData };
-  customProductsCatalog.unshift(newProduct);
-  return res.json({ message: 'Product created', product: newProduct });
 });
 
 // Create Product (POST /api/products)
-router.post('/', (req, res) => {
-  const newProd = { id: `p-${Date.now()}`, isHidden: false, ...req.body };
-  customProductsCatalog.unshift(newProd);
-  return res.status(201).json({ message: 'Product added', product: newProd });
+router.post('/', async (req, res) => {
+  try {
+    const newProd = { id: `p-${Date.now()}`, isHidden: false, ...req.body };
+    customProductsCatalog.unshift(newProd);
+    return res.status(201).json({ message: 'Product added', product: newProd });
+  } catch (e) {
+    return res.status(500).json({ message: 'Failed to create product' });
+  }
 });
 
 // Delete Product (DELETE /api/products/:id)
-router.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  customProductsCatalog = customProductsCatalog.filter((p) => p.id !== id);
-  return res.json({ message: 'Product deleted successfully' });
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Remove from memory catalog array
+    const targetMemProd = customProductsCatalog.find((p) => p.id === id || p.slug === id);
+    customProductsCatalog = customProductsCatalog.filter((p) => p.id !== id && p.slug !== id);
+
+    // Locate product in SQLite database by ID, slug, or matching name
+    let dbProd = await prisma.product.findFirst({
+      where: {
+        OR: [
+          { id },
+          { slug: id },
+          ...(targetMemProd ? [{ name: targetMemProd.name }, { slug: targetMemProd.slug }] : []),
+        ],
+      },
+    });
+
+    if (dbProd) {
+      try {
+        await prisma.productVariant.deleteMany({ where: { productId: dbProd.id } });
+        await prisma.product.delete({ where: { id: dbProd.id } });
+      } catch (dbErr) {
+        console.error('Error deleting product from SQLite DB:', dbErr);
+      }
+    }
+
+    return res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Delete product error:', error);
+    return res.status(500).json({ message: 'Failed to delete product' });
+  }
 });
 
 export default router;
