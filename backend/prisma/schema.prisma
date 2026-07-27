@@ -1,0 +1,144 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("CUSTOMER") // CUSTOMER, ADMIN, DRIVER
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  reviews   Review[]
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String
+  slug          String        @unique
+  icon          String
+  image         String?
+  description   String?
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products    Product[]
+}
+
+model Product {
+  id            String           @id @default(uuid())
+  name          String
+  slug          String           @unique
+  description   String
+  brand         String           @default("Shulov Fresh")
+  origin        String           @default("Local Farm")
+  isOrganic     Boolean          @default(false)
+  isFlashDeal   Boolean          @default(false)
+  rating        Float            @default(4.8)
+  reviewCount   Int              @default(12)
+  images        String           // JSON string of array
+  categoryId    String
+  subcategoryId String?
+  category      Category         @relation(fields: [categoryId], references: [id])
+  subcategory   Subcategory?     @relation(fields: [subcategoryId], references: [id])
+  variants      ProductVariant[]
+  reviews       Review[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model ProductVariant {
+  id            String      @id @default(uuid())
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  weight        String      // e.g., "500g", "1kg", "2L"
+  unit          String      @default("kg")
+  price         Float
+  originalPrice Float?
+  stock         Int         @default(50)
+  sku           String      @unique
+  orderItems    OrderItem[]
+}
+
+model Coupon {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  discountType  String   // PERCENTAGE or FLAT
+  discountValue Float
+  minOrderValue Float    @default(0)
+  maxDiscount   Float?
+  validUntil    DateTime
+  isActive      Boolean  @default(true)
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  subtitle  String
+  image     String
+  tag       String   @default("Special Offer")
+  link      String?  @default("/category/fresh-produce")
+  isActive  Boolean  @default(true)
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  totalAmount     Float
+  discountAmount  Float       @default(0)
+  deliveryFee     Float       @default(0)
+  tax             Float       @default(0)
+  netAmount       Float
+  status          String      @default("PENDING") // PENDING, PROCESSING, PACKED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  paymentMethod   String      @default("COD") // COD, CARD, WALLET
+  paymentStatus   String      @default("UNPAID") // UNPAID, PAID
+  deliveryAddress String
+  deliverySlot    String      @default("Today, 4:00 PM - 6:00 PM")
+  driverId        String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          String         @id @default(uuid())
+  orderId     String
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId   String
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  productName String
+  variantName String
+  unitPrice   Float
+  quantity    Int
+  totalPrice  Float
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userName  String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
