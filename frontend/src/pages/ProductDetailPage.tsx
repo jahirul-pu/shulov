@@ -17,6 +17,7 @@ import {
 import { Product, ProductVariant } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { parseProductImages, getPrimaryProductImage } from '../utils/image';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -44,8 +45,8 @@ export const ProductDetailPage: React.FC = () => {
         if (data.product) {
           setProduct(data.product);
           setSelectedVariant(data.product.variants[0]);
-          const imgs = JSON.parse(data.product.images || '[]');
-          setSelectedImage(imgs[0] || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80');
+          const imgs = parseProductImages(data.product.images);
+          setSelectedImage(imgs[0]);
           return;
         }
       } catch (e) {}
@@ -77,7 +78,7 @@ export const ProductDetailPage: React.FC = () => {
 
   if (!product || !selectedVariant) return <div className="p-12 text-center text-slate-500">Loading product details...</div>;
 
-  const images = JSON.parse(product.images || '[]');
+  const images = parseProductImages(product.images);
 
   const cartItem = cart.find((i) => i.variant.id === selectedVariant.id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;

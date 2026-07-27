@@ -310,11 +310,73 @@ router.put('/:id', async (req, res) => {
 // Create Product (POST /api/products)
 router.post('/', async (req, res) => {
   try {
+    const { name, brand, description, category, subcategory, images, isOrganic, isFlashDeal, variants } = req.body;
+
+    const prodName = name || 'New Grocery Item';
+    const prodSlug = prodName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
+    
+    // Normalize image format to JSON array string
+    let formattedImagesString = JSON.stringify(['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80']);
+    if (images) {
+      if (Array.isArray(images)) {
+        formattedImagesString = JSON.stringify(images);
+      } else if (typeof images === 'string') {
+        const trimmed = images.trim();
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          formattedImagesString = trimmed;
+        } else {
+          formattedImagesString = JSON.stringify([trimmed]);
+        }
+      }
+    }
+
+    // Category resolution
+    let catRecord = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { name: category?.name || (typeof category === 'string' ? category : 'Fresh Fruits & Veggies') },
+          { slug: category?.slug || 'fresh-produce' },
+        ],
+      },
+    });
+
+    if (!catRecord) {
+      catRecord = await prisma.category.findFirst();
+    }
+
+    const createdProduct = await prisma.product.create({
+      data: {
+        name: prodName,
+        slug: prodSlug,
+        description: description || 'Fresh high quality grocery product.',
+        brand: brand || 'Shulov Fresh',
+        origin: 'Bangladesh',
+        images: formattedImagesString,
+        isOrganic: Boolean(isOrganic),
+        isFlashDeal: Boolean(isFlashDeal),
+        categoryId: catRecord ? catRecord.id : 'cat-1',
+        variants: {
+          create: Array.isArray(variants) && variants.length > 0
+            ? variants.map((v: any) => ({
+                weight: v.weight || '1kg',
+                unit: 'kg',
+                price: parseFloat(v.price) || 2.5,
+                stock: parseInt(v.stock, 10) || 50,
+                sku: v.sku || `SKU-${Date.now().toString().slice(-4)}`,
+              }))
+            : [{ weight: '1kg', unit: 'kg', price: 3.5, stock: 50, sku: `SKU-${Date.now().toString().slice(-4)}` }],
+        },
+      },
+      include: { category: true, subcategory: true, variants: true },
+    });
+
+    customProductsCatalog.unshift(createdProduct);
+    return res.status(201).json({ message: 'Product added successfully', product: createdProduct });
+  } catch (e) {
+    console.error('Create product DB error:', e);
     const newProd = { id: `p-${Date.now()}`, isHidden: false, ...req.body };
     customProductsCatalog.unshift(newProd);
     return res.status(201).json({ message: 'Product added', product: newProd });
-  } catch (e) {
-    return res.status(500).json({ message: 'Failed to create product' });
   }
 });
 

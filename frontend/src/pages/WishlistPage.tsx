@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Trash2, ShoppingBag, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { getPrimaryProductImage } from '../utils/image';
 
 export const WishlistPage: React.FC = () => {
   const { addToCart } = useCart();
@@ -58,8 +59,7 @@ export const WishlistPage: React.FC = () => {
       {/* Saved Items Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {wishlist.map((product) => {
-          const images = JSON.parse(product.images || '[]');
-          const img = images[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80';
+          const img = getPrimaryProductImage(product.images);
           const mainVariant = product.variants[0] || { weight: '1kg', price: 440.0, originalPrice: 500.0 };
 
           return (

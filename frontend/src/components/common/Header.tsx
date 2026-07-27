@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getPrimaryProductImage } from '../../utils/image';
 import {
   Search,
   ShoppingBag,
@@ -219,8 +220,7 @@ export const Header: React.FC = () => {
                   </div>
                 ) : (
                   searchResults.map((product) => {
-                    const imgs = JSON.parse(product.images || '[]');
-                    const img = imgs[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80';
+                    const img = getPrimaryProductImage(product.images);
                     const mainVariant = product.variants?.[0] || { weight: '1kg', price: 4.49 };
 
                     return (

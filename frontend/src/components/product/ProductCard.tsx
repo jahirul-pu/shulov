@@ -4,6 +4,7 @@ import { Star, Plus, Minus, Heart, Leaf, Flame, Check } from 'lucide-react';
 import { Product, ProductVariant } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { getPrimaryProductImage } from '../../utils/image';
 
 interface ProductCardProps {
   product: Product;
@@ -19,8 +20,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   );
   const [justAdded, setJustAdded] = useState(false);
 
-  const images = JSON.parse(product.images || '[]');
-  const mainImage = images[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80';
+  const mainImage = getPrimaryProductImage(product.images);
 
   const cartItem = cart.find((item) => item.variant.id === selectedVariant.id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Leaf, Flame, AlertCircle, Check, X, Eye, EyeOff, Save, Tag, Layers, Image as ImageIcon } from 'lucide-react';
+import { getPrimaryProductImage } from '../utils/image';
 
 interface VariantState {
   id: string;
@@ -326,7 +327,7 @@ export const ProductsPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
               {filteredProducts.map((p) => {
-                const img = JSON.parse(p.images || '[]')[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80';
+                const img = getPrimaryProductImage(p.images);
                 const isHidden = hiddenIds.includes(p.id) || !!p.isHidden;
                 const variantsList: any[] = p.variants || [];
 
