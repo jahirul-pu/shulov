@@ -298,6 +298,44 @@ router.put('/:id', async (req, res) => {
             ...(updateData.isFlashDeal !== undefined ? { isFlashDeal: Boolean(updateData.isFlashDeal) } : {}),
           },
         });
+
+        if (Array.isArray(updateData.variants)) {
+          for (const v of updateData.variants) {
+            const parsedPrice = parseFloat(v.price) || 0;
+            const parsedCostPrice = parseFloat(v.costPrice) || Math.round(parsedPrice * 0.70 * 100) / 100;
+            const parsedStock = parseInt(v.stock, 10) || 0;
+
+            if (v.id) {
+              const existingV = await prisma.productVariant.findUnique({ where: { id: v.id } });
+              if (existingV) {
+                await prisma.productVariant.update({
+                  where: { id: v.id },
+                  data: {
+                    weight: v.weight || existingV.weight,
+                    price: parsedPrice > 0 ? parsedPrice : existingV.price,
+                    costPrice: parsedCostPrice,
+                    stock: parsedStock,
+                  },
+                });
+                continue;
+              }
+            }
+
+            try {
+              await prisma.productVariant.create({
+                data: {
+                  productId: dbProd.id,
+                  weight: v.weight || '1kg',
+                  unit: 'kg',
+                  price: parsedPrice || 3.5,
+                  costPrice: parsedCostPrice,
+                  stock: parsedStock || 50,
+                  sku: v.sku || `SKU-${Date.now().toString().slice(-4)}`,
+                },
+              });
+            } catch (vErr) {}
+          }
+        }
       }
     } catch (e) {}
 

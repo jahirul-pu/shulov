@@ -114,10 +114,11 @@ export const ProductsPage: React.FC = () => {
           id: v.id || `ev-${index}-${Date.now()}`,
           weight: v.weight || '1kg',
           price: v.price !== undefined ? v.price : 4.99,
+          costPrice: v.costPrice !== undefined ? v.costPrice : Math.round((v.price || 4.99) * 0.70 * 100) / 100,
           stock: v.stock !== undefined ? v.stock : 50,
           sku: v.sku || `SKU-${index + 1}`,
         }))
-      : [{ id: `ev-0-${Date.now()}`, weight: '1kg', price: 4.99, stock: 50, sku: 'SKU-001' }];
+      : [{ id: `ev-0-${Date.now()}`, weight: '1kg', price: 4.99, costPrice: 3.50, stock: 50, sku: 'SKU-001' }];
 
     setEditVariants(variantsToEdit);
   };
@@ -136,6 +137,7 @@ export const ProductsPage: React.FC = () => {
         id: `ev-${Date.now()}`,
         weight: '1kg',
         price: '4.99',
+        costPrice: '3.50',
         stock: '50',
         sku: `SKU-${prev.length + 1}`,
       },
@@ -161,6 +163,7 @@ export const ProductsPage: React.FC = () => {
         id: `nv-${Date.now()}`,
         weight: '1kg',
         price: '4.99',
+        costPrice: '3.50',
         stock: '50',
         sku: `SKU-${prev.length + 1}`,
       },
@@ -181,6 +184,7 @@ export const ProductsPage: React.FC = () => {
       productId: editingProduct.id,
       weight: v.weight,
       price: parseFloat(v.price.toString()) || 0,
+      costPrice: parseFloat(v.costPrice?.toString() || '0') || 0,
       stock: parseInt(v.stock.toString(), 10) || 0,
       sku: v.sku || `SKU-${Date.now().toString().slice(-4)}`,
     }));
@@ -230,6 +234,7 @@ export const ProductsPage: React.FC = () => {
       productId: createdId,
       weight: v.weight,
       price: parseFloat(v.price.toString()) || 0,
+      costPrice: parseFloat(v.costPrice?.toString() || '0') || 0,
       stock: parseInt(v.stock.toString(), 10) || 0,
       sku: v.sku || `SKU-${Date.now().toString().slice(-4)}`,
     }));
