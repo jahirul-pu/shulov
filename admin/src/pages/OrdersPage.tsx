@@ -158,9 +158,19 @@ export const OrdersPage: React.FC = () => {
                   </span>
                   <span className="text-slate-400">Date: {new Date().toLocaleDateString()}</span>
                 </div>
-                <span className="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 h-fit">
-                  PAID COD
-                </span>
+                {selectedOrderForInvoice.paymentStatus === 'PAID' ? (
+                  <span className="font-extrabold text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 h-fit uppercase">
+                    PAID
+                  </span>
+                ) : selectedOrderForInvoice.paymentMethod === 'COD' ? (
+                  <span className="font-extrabold text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 h-fit uppercase">
+                    COD
+                  </span>
+                ) : (
+                  <span className="font-extrabold text-xs text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 h-fit uppercase">
+                    UNPAID
+                  </span>
+                )}
               </div>
 
               <div className="space-y-1">
