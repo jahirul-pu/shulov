@@ -8,6 +8,7 @@ import { Footer } from './components/common/Footer';
 import { CartDrawer } from './components/common/CartDrawer';
 import { PromoPopup } from './components/common/PromoPopup';
 import { MobileNav } from './components/common/MobileNav';
+import { ChatBubble } from './components/common/ChatBubble';
 import { HomePage } from './pages/HomePage';
 import { CategoryPage } from './pages/CategoryPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -45,6 +46,7 @@ export const App: React.FC = () => {
                 </Routes>
               </main>
               <Footer />
+              <ChatBubble />
               <MobileNav />
             </div>
           </Router>
