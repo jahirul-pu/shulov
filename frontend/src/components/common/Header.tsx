@@ -10,9 +10,6 @@ import {
   ChevronDown,
   LayoutGrid,
   Sparkles,
-  PhoneCall,
-  Globe,
-  PackageCheck,
   X,
   Check,
 } from 'lucide-react';
@@ -105,47 +102,18 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-sm">
-      {/* Top Bar */}
-      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div
-              className="flex items-center gap-1.5 cursor-pointer hover:text-brand-400 transition-colors"
-              onClick={() => setIsAddressModalOpen(true)}
-            >
-              <MapPin className="w-3.5 h-3.5 text-brand-400" />
-              <span>Deliver to: <strong className="text-white">{selectedAddress}</strong></span>
-              <ChevronDown className="w-3 h-3" />
-            </div>
-            <div className="hidden md:flex items-center gap-1.5 text-slate-400">
-              <PhoneCall className="w-3.5 h-3.5 text-slate-400" />
-              <span>24/7 Support: +880 9612-000000</span>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-6">
-            <Link to="/order-tracking/SHL-882910-412" className="flex items-center gap-1 hover:text-brand-400 transition-colors">
-              <PackageCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Track Order</span>
-            </Link>
-            <div className="flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-slate-400" />
-              <span>English / BDT (৳)</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-6">
         <div className="flex items-center justify-between w-full md:w-auto">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-soft group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 fill-white/20" />
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-soft group-hover:scale-105 transition-transform">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-white/20" />
             </div>
             <div>
-              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
                 Shulov<span className="text-brand-500">Fresh</span>
               </span>
             </div>
@@ -155,9 +123,9 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setIsCartOpen(true)}
-              className="px-3 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-extrabold text-xs flex items-center gap-1.5 shadow-sm"
+              className="px-2.5 py-1.5 bg-transparent hover:bg-slate-100 text-slate-800 rounded-xl font-extrabold text-xs flex items-center gap-1.5 transition-colors border border-slate-200"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 text-brand-600" />
               <span>৳{total.toFixed(0)}</span>
             </button>
           </div>
@@ -168,11 +136,11 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
             onMouseEnter={() => setIsMegaMenuOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 bg-brand-50 hover:bg-brand-100/80 text-brand-800 font-semibold text-sm rounded-xl border border-brand-200/60 transition-all"
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100/80 text-brand-800 font-semibold text-xs rounded-xl border border-brand-200/60 transition-all"
           >
-            <LayoutGrid className="w-4 h-4 text-brand-600" />
+            <LayoutGrid className="w-3.5 h-3.5 text-brand-600" />
             <span>All Categories</span>
-            <ChevronDown className={`w-4 h-4 text-brand-600 transition-transform ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-brand-600 transition-transform ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
           </button>
 
           <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
@@ -190,13 +158,13 @@ export const Header: React.FC = () => {
                 setShowSearchDropdown(true);
               }}
               onFocus={() => setShowSearchDropdown(true)}
-              className="w-full pl-4 pr-12 py-2.5 bg-surface-50 border border-slate-200 focus:border-brand-500 focus:bg-white rounded-xl text-sm transition-all focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+              className="w-full pl-3.5 pr-10 py-1.5 bg-surface-50 border border-slate-200 focus:border-brand-500 focus:bg-white rounded-xl text-xs transition-all focus:outline-none focus:ring-4 focus:ring-brand-500/10"
             />
             <button
               type="submit"
-              className="absolute right-1.5 p-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
+              className="absolute right-1 p-1 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-3.5 h-3.5" />
             </button>
           </form>
 
@@ -264,9 +232,7 @@ export const Header: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className="font-extrabold text-xs text-slate-900">
-                            ৳{mainVariant.price?.toFixed(2) || '440.00'}
-                          </span>
+                          <span className="font-mono font-extrabold text-sm text-brand-700">৳{mainVariant.price.toFixed(2)}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -296,16 +262,16 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Action Buttons (Desktop Only) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {/* Wishlist */}
           <Link
             to="/wishlist"
-            className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-700 relative transition-colors"
+            className="p-2 rounded-xl hover:bg-slate-100 text-slate-700 relative transition-colors"
             title="Saved Items"
           >
-            <Heart className="w-5 h-5" />
+            <Heart className="w-4.5 h-4.5" />
             {wishlist.length > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-in zoom-in">
+              <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-in zoom-in">
                 {wishlist.length}
               </span>
             )}
@@ -315,10 +281,10 @@ export const Header: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 p-2 px-3 rounded-xl hover:bg-slate-100 text-slate-800 transition-colors"
+              className="flex items-center gap-2 p-1.5 px-2.5 rounded-xl hover:bg-slate-100 text-slate-800 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-extrabold text-xs border border-brand-200">
-                {user ? user.name[0] : <UserIcon className="w-4 h-4 text-slate-600" />}
+              <div className="w-7 h-7 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-extrabold text-xs border border-brand-200">
+                {user ? user.name[0] : <UserIcon className="w-3.5 h-3.5 text-slate-600" />}
               </div>
               <div className="text-left hidden lg:block">
                 <span className="block text-[10px] text-slate-400 font-medium">
@@ -328,37 +294,30 @@ export const Header: React.FC = () => {
                   {user ? user.name.split(' ')[0] : 'Sign In / Register'}
                 </span>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
+            {/* User Dropdown */}
             {isUserMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2">
                 {user ? (
                   <>
-                    <div className="px-4 py-2 border-b border-slate-100">
-                      <p className="text-[11px] text-slate-400 font-medium">Logged in as</p>
-                      <p className="text-xs font-extrabold text-slate-800 truncate">{user.name}</p>
-                      <p className="text-[11px] text-slate-500 font-medium truncate">{user.email || user.phone}</p>
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-800">{user.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user.email || user.phone}</p>
                     </div>
                     <Link
                       to="/account"
-                      className="block px-4 py-2.5 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-bold transition-colors"
+                      className="block px-4 py-2 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      My Customer Portal 👤
-                    </Link>
-                    <Link
-                      to="/order-tracking/SHL-882910-412"
-                      className="block px-4 py-2.5 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      My Orders & Live Tracking 🚚
+                      My Account & Orders 🚚
                     </Link>
                     <a
                       href="http://localhost:3002"
                       target="_blank"
                       rel="noreferrer"
-                      className="block px-4 py-2.5 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors"
+                      className="block px-4 py-2 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Admin Web Panel ↗
@@ -368,7 +327,7 @@ export const Header: React.FC = () => {
                         logout();
                         setIsUserMenuOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 font-bold border-t border-slate-100 transition-colors"
+                      className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 font-bold border-t border-slate-100 transition-colors"
                     >
                       Sign Out
                     </button>
@@ -382,17 +341,17 @@ export const Header: React.FC = () => {
                     <div className="p-2 space-y-1.5">
                       <Link
                         to="/login"
-                        className="block w-full py-2 text-center bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors shadow-xs"
+                        className="block w-full py-1.5 text-center bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors shadow-xs"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Sign In
                       </Link>
                       <Link
                         to="/signup"
-                        className="block w-full py-2 text-center bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors"
+                        className="block w-full py-1.5 text-center bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Create New Account
+                        Create Account
                       </Link>
                     </div>
                   </>
@@ -404,19 +363,19 @@ export const Header: React.FC = () => {
           {/* Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-3 px-4 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold text-sm rounded-xl shadow-soft hover:shadow-md transition-all active:scale-95"
+            className="flex items-center gap-2.5 p-1.5 px-2.5 rounded-xl hover:bg-slate-100 text-slate-800 transition-colors"
           >
             <div className="relative">
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="w-4.5 h-4.5 text-brand-600" />
               {totalItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[9px] font-extrabold w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
                   {totalItemCount}
                 </span>
               )}
             </div>
-            <div className="text-left border-l border-white/20 pl-3">
-              <span className="block text-[10px] font-normal text-brand-100">My Cart</span>
-              <span className="block text-xs font-bold">৳{subtotal.toFixed(2)}</span>
+            <div className="text-left border-l border-slate-200 pl-2">
+              <span className="block text-[10px] text-slate-400 font-medium">My Cart</span>
+              <span className="block text-xs font-extrabold text-slate-800 -mt-0.5">৳{subtotal.toFixed(2)}</span>
             </div>
           </button>
         </div>
