@@ -24,17 +24,25 @@ router.post('/register', async (req, res) => {
       userEmail = `${cleanDigits}@shulov.user`;
     }
 
-    if (email) {
+    const cleanPhoneDigits = userPhone ? userPhone.replace(/\D/g, '').replace(/^880/, '0') : '';
+
+    if (userEmail) {
       const existingEmail = await prisma.user.findUnique({ where: { email: userEmail } });
       if (existingEmail) {
-        return res.status(400).json({ message: 'User with this email already exists' });
+        return res.status(400).json({ message: 'An account with this email address already exists.' });
       }
     }
 
-    if (userPhone) {
-      const existingPhone = await prisma.user.findFirst({ where: { phone: userPhone } });
-      if (existingPhone) {
-        return res.status(400).json({ message: 'User with this phone number already exists' });
+    if (cleanPhoneDigits) {
+      const allUsers = await prisma.user.findMany({ select: { id: true, phone: true } });
+      const duplicatePhoneUser = allUsers.find((u) => {
+        if (!u.phone) return false;
+        const uClean = u.phone.replace(/\D/g, '').replace(/^880/, '0');
+        return uClean === cleanPhoneDigits;
+      });
+
+      if (duplicatePhoneUser) {
+        return res.status(400).json({ message: 'An account with this phone number already exists.' });
       }
     }
 
