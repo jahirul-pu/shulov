@@ -79,21 +79,41 @@ export const CustomerPortalPage: React.FC = () => {
     }
   }, [user]);
 
-  const handleAddAddress = (e: React.FormEvent) => {
+  const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAddressText.trim()) return;
 
+    const fullAddr = newAddressText.trim();
     const newAddr = {
       id: `addr-${Date.now()}`,
       type: newAddressType,
-      isDefault: addresses.length === 0,
-      details: newAddressText.trim(),
+      isDefault: true,
+      details: fullAddr,
       phone: phone || '',
     };
 
-    setAddresses([...addresses, newAddr]);
+    setAddresses([newAddr, ...addresses]);
     setNewAddressText('');
     setIsAddAddressOpen(false);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address: fullAddr,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        updateUser(data.user);
+      }
+    } catch (err) {
+      console.error('Failed to persist new address:', err);
+    }
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {

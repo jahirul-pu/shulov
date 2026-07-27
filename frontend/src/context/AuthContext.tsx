@@ -35,6 +35,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  useEffect(() => {
+    if (!token) return;
+
+    fetch('http://localhost:5000/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user);
+          localStorage.setItem('shulov_user', JSON.stringify(data.user));
+        }
+      })
+      .catch((err) => console.error('Failed to sync auth user from DB:', err));
+  }, [token]);
+
   const logout = () => {
     setToken(null);
     setUser(null);

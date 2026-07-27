@@ -243,4 +243,28 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// Update Registered User Details
+router.put('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, phone, address, role } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        ...(name ? { name: name.trim() } : {}),
+        ...(email !== undefined ? { email: email.trim() } : {}),
+        ...(phone !== undefined ? { phone: phone.trim() } : {}),
+        ...(address !== undefined ? { address: address.trim() } : {}),
+        ...(role ? { role } : {}),
+      },
+    });
+
+    return res.json({ user: updatedUser });
+  } catch (error) {
+    console.error('Update user error:', error);
+    return res.status(500).json({ message: 'Failed to update user details' });
+  }
+});
+
 export default router;

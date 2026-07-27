@@ -4,17 +4,15 @@ import {
   Search,
   ShoppingBag,
   DollarSign,
-  Calendar,
   PhoneCall,
   Mail,
   MapPin,
   X,
-  ChevronRight,
-  Shield,
   UserCheck,
   Package,
-  Clock,
   ArrowUpRight,
+  Edit2,
+  Check,
 } from 'lucide-react';
 
 interface OrderItem {
@@ -62,6 +60,16 @@ export const UsersPage: React.FC = () => {
 
   const [selectedUserForHistory, setSelectedUserForHistory] = useState<UserData | null>(null);
 
+  // Edit User Modal State
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editRole, setEditRole] = useState('CUSTOMER');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState('');
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -81,6 +89,58 @@ export const UsersPage: React.FC = () => {
       })
       .catch((err) => console.error('Failed to fetch admin users:', err))
       .finally(() => setIsLoading(false));
+  };
+
+  const handleOpenEdit = (user: UserData) => {
+    setEditingUser(user);
+    setEditName(user.name);
+    setEditPhone(user.phone);
+    setEditEmail(user.email);
+    setEditAddress(user.address);
+    setEditRole(user.role);
+    setUpdateSuccess('');
+  };
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setIsUpdating(true);
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('shulov_token') || ''}`,
+        },
+        body: JSON.stringify({
+          name: editName.trim(),
+          phone: editPhone.trim(),
+          email: editEmail.trim(),
+          address: editAddress.trim(),
+          role: editRole,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setUpdateSuccess('User details updated in database!');
+        fetchUsers();
+        setTimeout(() => {
+          setEditingUser(null);
+          setUpdateSuccess('');
+        }, 1200);
+      } else {
+        alert(data.message || 'Failed to update user');
+      }
+    } catch (err) {
+      console.error('Update user error:', err);
+      alert('Error connecting to server.');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // Filtered users
@@ -114,7 +174,7 @@ export const UsersPage: React.FC = () => {
             <Users className="w-7 h-7 text-brand-600" /> User Directory & Customer Lifetime Value
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage all registered accounts, view customer contact information, and track lifetime purchase histories.
+            Manage all registered accounts, edit profile data, and track lifetime purchase histories.
           </p>
         </div>
 
@@ -217,7 +277,7 @@ export const UsersPage: React.FC = () => {
                   <th className="py-3.5 px-4">Joined Date</th>
                   <th className="py-3.5 px-4 text-center">Total Orders</th>
                   <th className="py-3.5 px-4 text-right">Lifetime Spend</th>
-                  <th className="py-3.5 px-6 text-right">Action</th>
+                  <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -290,13 +350,21 @@ export const UsersPage: React.FC = () => {
                       ৳{u.lifetimeSpend.toFixed(2)}
                     </td>
 
-                    {/* View History Button */}
-                    <td className="py-4 px-6 text-right">
+                    {/* Actions */}
+                    <td className="py-4 px-6 text-right space-x-2">
+                      <button
+                        onClick={() => handleOpenEdit(u)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors"
+                        title="Edit User Data"
+                      >
+                        <Edit2 className="w-3 h-3 text-slate-500" />
+                        <span>Edit</span>
+                      </button>
                       <button
                         onClick={() => setSelectedUserForHistory(u)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold text-xs rounded-xl transition-colors border border-brand-200/60"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold text-xs rounded-xl transition-colors border border-brand-200/60"
                       >
-                        <span>Purchase History</span>
+                        <span>History</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -307,6 +375,102 @@ export const UsersPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-brand-600" /> Edit User Profile Data
+              </h3>
+              <button onClick={() => setEditingUser(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {updateSuccess && (
+              <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" /> {updateSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveUser} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold focus:outline-none focus:border-brand-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold focus:outline-none focus:border-brand-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold focus:outline-none focus:border-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Default Address</label>
+                <textarea
+                  rows={2}
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold focus:outline-none focus:border-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Account Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800"
+                >
+                  <option value="CUSTOMER">Customer</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="DRIVER">Driver</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 text-slate-500 hover:bg-slate-100 font-bold rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-xl shadow-soft"
+                >
+                  {isUpdating ? 'Saving...' : 'Save to Database'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Lifetime Purchase History Drawer / Modal */}
       {selectedUserForHistory && (
