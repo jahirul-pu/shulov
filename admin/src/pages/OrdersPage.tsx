@@ -3,18 +3,16 @@ import { ShoppingBag, Truck, CheckCircle2, Clock, Printer, User, MapPin, Chevron
 import { io } from 'socket.io-client';
 
 export const OrdersPage: React.FC = () => {
-  const [orders, setOrders] = useState<any[]>(mockKanbanOrders);
+  const [orders, setOrders] = useState<any[]>([]);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/admin/orders', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('shulov_token') || ''}` },
-    })
+    fetch('http://localhost:5000/api/admin/orders')
       .then((res) => res.json())
       .then((data) => {
-        if (data.orders && data.orders.length > 0) setOrders(data.orders);
+        if (data.orders) setOrders(data.orders);
       })
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch admin orders:', err));
 
     const socket = io('http://localhost:5000');
     socket.on('new-order', (newOrd) => {
@@ -220,10 +218,3 @@ export const OrdersPage: React.FC = () => {
     </div>
   );
 };
-
-const mockKanbanOrders = [
-  { id: 'SHL-882910-412', orderNumber: 'SHL-882910', status: 'PENDING', netAmount: 34.5, deliveryAddress: 'Banani, Dhaka', user: { name: 'Rahim Chowdhury' } },
-  { id: 'SHL-882909-318', orderNumber: 'SHL-882909', status: 'PROCESSING', netAmount: 18.2, deliveryAddress: 'Gulshan-2, Dhaka', user: { name: 'Sabrina Karim' } },
-  { id: 'SHL-882908-102', orderNumber: 'SHL-882908', status: 'OUT_FOR_DELIVERY', netAmount: 52.8, deliveryAddress: 'Uttara, Dhaka', user: { name: 'Tanvir Hossain' } },
-  { id: 'SHL-882907-994', orderNumber: 'SHL-882907', status: 'DELIVERED', netAmount: 24.9, deliveryAddress: 'Dhanmondi, Dhaka', user: { name: 'Nusrat Jahan' } },
-];
