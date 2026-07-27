@@ -50,12 +50,8 @@ export const DashboardPage: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAnalytics(selectedRange);
-  }, [selectedRange]);
-
-  const fetchAnalytics = (range: string) => {
-    setIsLoading(true);
+  const fetchAnalytics = React.useCallback((range: string, showLoading = false) => {
+    if (showLoading) setIsLoading(true);
     fetch(`http://localhost:5000/api/admin/analytics?range=${range}`)
       .then((res) => res.json())
       .then((data) => {
@@ -67,8 +63,29 @@ export const DashboardPage: React.FC = () => {
         if (data.recentOrders) setRecentOrders(data.recentOrders);
       })
       .catch((err) => console.error('Failed to fetch dashboard analytics:', err))
-      .finally(() => setIsLoading(false));
-  };
+      .finally(() => {
+        if (showLoading) setIsLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetchAnalytics(selectedRange, true);
+
+    const interval = setInterval(() => {
+      fetchAnalytics(selectedRange, false);
+    }, 3000);
+
+    const handleFocus = () => {
+      fetchAnalytics(selectedRange, false);
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [selectedRange, fetchAnalytics]);
 
   return (
     <div className="space-y-8">

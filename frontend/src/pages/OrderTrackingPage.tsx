@@ -11,10 +11,10 @@ export const OrderTrackingPage: React.FC = () => {
   const [etaMinutes, setEtaMinutes] = useState(14);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchOrderDetails = React.useCallback((showLoading = false) => {
     if (!orderId) return;
+    if (showLoading) setIsLoading(true);
 
-    setIsLoading(true);
     fetch(`http://localhost:5000/api/orders/${orderId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -24,7 +24,26 @@ export const OrderTrackingPage: React.FC = () => {
         }
       })
       .catch((err) => console.error('Failed to fetch order details:', err))
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (showLoading) setIsLoading(false);
+      });
+  }, [orderId]);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    fetchOrderDetails(true);
+
+    // Auto-poll status every 3 seconds for live tracking updates
+    const pollInterval = setInterval(() => {
+      fetchOrderDetails(false);
+    }, 3000);
+
+    const handleFocus = () => {
+      fetchOrderDetails(false);
+    };
+
+    window.addEventListener('focus', handleFocus);
 
     // Socket listener for live tracking updates
     const socket = io('http://localhost:5000');
@@ -34,15 +53,17 @@ export const OrderTrackingPage: React.FC = () => {
       if (data.status) setOrderStatus(data.status);
     });
 
-    const interval = setInterval(() => {
+    const timerInterval = setInterval(() => {
       setEtaMinutes((prev) => (prev > 1 ? prev - 1 : 1));
     }, 15000);
 
     return () => {
       socket.disconnect();
-      clearInterval(interval);
+      clearInterval(pollInterval);
+      clearInterval(timerInterval);
+      window.removeEventListener('focus', handleFocus);
     };
-  }, [orderId]);
+  }, [orderId, fetchOrderDetails]);
 
   const steps = [
     { key: 'PENDING', label: 'Order Received', icon: Clock, desc: 'We received your grocery order.' },

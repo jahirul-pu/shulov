@@ -7,13 +7,27 @@ export const OrdersPage: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all');
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any | null>(null);
 
-  useEffect(() => {
+  const fetchOrders = React.useCallback(() => {
     fetch('http://localhost:5000/api/admin/orders')
       .then((res) => res.json())
       .then((data) => {
         if (data.orders) setOrders(data.orders);
       })
       .catch((err) => console.error('Failed to fetch admin orders:', err));
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+
+    const interval = setInterval(() => {
+      fetchOrders();
+    }, 3000);
+
+    const handleFocus = () => {
+      fetchOrders();
+    };
+
+    window.addEventListener('focus', handleFocus);
 
     const socket = io('http://localhost:5000');
     socket.on('new-order', (newOrd) => {
@@ -21,9 +35,11 @@ export const OrdersPage: React.FC = () => {
     });
 
     return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
       socket.disconnect();
     };
-  }, []);
+  }, [fetchOrders]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setOrders((prev) =>

@@ -44,25 +44,47 @@ export const CustomerPortalPage: React.FC = () => {
   const [email, setEmail] = useState(() => (user?.email && !user.email.endsWith('@shulov.user') ? user.email : ''));
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
-  // Fetch real user orders when token is present
-  useEffect(() => {
+  // Real-time order fetcher with auto-polling & focus refresh
+  const fetchOrders = React.useCallback(async (showLoading = false) => {
     if (!token) return;
+    if (showLoading) setIsLoadingOrders(true);
 
-    setIsLoadingOrders(true);
-    fetch('http://localhost:5000/api/orders/my-orders', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.orders) {
-          setOrders(data.orders);
-        }
-      })
-      .catch((err) => console.error('Error fetching user orders:', err))
-      .finally(() => setIsLoadingOrders(false));
+    try {
+      const res = await fetch('http://localhost:5000/api/orders/my-orders', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.orders) {
+        setOrders(data.orders);
+      }
+    } catch (err) {
+      console.error('Error fetching user orders:', err);
+    } finally {
+      if (showLoading) setIsLoadingOrders(false);
+    }
   }, [token]);
+
+  useEffect(() => {
+    fetchOrders(orders.length === 0);
+
+    // Auto-poll orders every 3 seconds for real-time status updates without manual refresh
+    const interval = setInterval(() => {
+      fetchOrders(false);
+    }, 3000);
+
+    const handleFocus = () => {
+      fetchOrders(false);
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchOrders, activeTab]);
 
   // Update profile fields when user changes
   useEffect(() => {
@@ -144,7 +166,8 @@ export const CustomerPortalPage: React.FC = () => {
     }
   };
 
-  const activeOrder = orders.find((o) => o.status === 'PENDING' || o.status === 'PROCESSING' || o.status === 'PACKED' || o.status === 'OUT_FOR_DELIVERY');
+  const pendingOrders = orders.filter((o) => o.status !== 'DELIVERED' && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
+  const completedOrders = orders.filter((o) => o.status === 'DELIVERED' || o.status === 'COMPLETED');
   const displayEmail = user?.email && !user.email.endsWith('@shulov.user') ? user.email : null;
 
   return (
@@ -170,9 +193,13 @@ export const CustomerPortalPage: React.FC = () => {
 
           {/* Real User Order Counter */}
           <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 text-xs">
-            <div className="text-center px-4">
-              <span className="block font-bold text-slate-300 text-[10px] uppercase">Total Orders</span>
-              <span className="font-extrabold text-white text-lg">{orders.length}</span>
+            <div className="text-center px-3 border-r border-white/10">
+              <span className="block font-bold text-slate-300 text-[10px] uppercase">Pending Orders</span>
+              <span className="font-extrabold text-amber-400 text-lg">{pendingOrders.length}</span>
+            </div>
+            <div className="text-center px-3">
+              <span className="block font-bold text-slate-300 text-[10px] uppercase">Completed</span>
+              <span className="font-extrabold text-emerald-400 text-lg">{completedOrders.length}</span>
             </div>
           </div>
         </div>
@@ -184,24 +211,34 @@ export const CustomerPortalPage: React.FC = () => {
         <div className="space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
               activeTab === 'overview'
                 ? 'bg-brand-500 text-white shadow-soft'
                 : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-100'
             }`}
           >
-            <User className="w-4 h-4" /> Overview Dashboard
+            <span className="flex items-center gap-3">
+              <User className="w-4 h-4" /> Overview Dashboard
+            </span>
+            {pendingOrders.length > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400 text-slate-900">
+                {pendingOrders.length}
+              </span>
+            )}
           </button>
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
               activeTab === 'orders'
                 ? 'bg-brand-500 text-white shadow-soft'
                 : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-100'
             }`}
           >
-            <PackageCheck className="w-4 h-4" /> My Orders & Invoices ({orders.length})
+            <span className="flex items-center gap-3">
+              <PackageCheck className="w-4 h-4" /> My Orders & Invoices
+            </span>
+            <span className="text-[11px] opacity-80">({completedOrders.length})</span>
           </button>
 
           <button
@@ -229,46 +266,75 @@ export const CustomerPortalPage: React.FC = () => {
 
         {/* Tab Content Panel */}
         <div className="lg:col-span-3">
-          {/* TAB 1: OVERVIEW */}
+          {/* TAB 1: OVERVIEW — Shows ALL Pending / Active Orders */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Active Order Banner (If Any Real Order Exists) */}
-              {activeOrder ? (
-                <div className="bg-white rounded-3xl p-6 border border-brand-200 shadow-sm space-y-4 relative overflow-hidden">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                      <h3 className="font-extrabold text-base text-slate-900">Active Order #{activeOrder.orderNumber}</h3>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900">Active & Pending Orders</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Live tracking for orders currently in progress.</p>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
+                  {pendingOrders.length} Pending
+                </span>
+              </div>
+
+              {pendingOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {pendingOrders.map((ord) => (
+                    <div key={ord.id} className="bg-white rounded-3xl p-6 border border-brand-200 shadow-sm space-y-4 relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                          <h4 className="font-extrabold text-base text-slate-900">Order #{ord.orderNumber}</h4>
+                          <span className="text-xs text-slate-400 font-medium ml-2">
+                            • {new Date(ord.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-extrabold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
+                            {ord.status}
+                          </span>
+                          <span className="font-extrabold text-slate-900 text-base">
+                            ৳{ord.netAmount?.toFixed(2) || ord.totalAmount?.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Items Preview */}
+                      <div className="space-y-1.5 pt-1">
+                        {ord.items?.map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-xs text-slate-700">
+                            <span>
+                              <strong className="text-slate-900">{item.quantity}x</strong> {item.productName} ({item.variantName})
+                            </span>
+                            <span className="font-semibold text-slate-900">৳{item.totalPrice?.toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-brand-600" /> Slot: {ord.deliverySlot}
+                        </span>
+                        <Link
+                          to={`/order-tracking/${ord.orderNumber}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors"
+                        >
+                          <span>Track Order</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
-                      {activeOrder.status}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-600">
-                    Your items are currently being prepared for fast delivery.
-                  </p>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-brand-600" /> Slot: {activeOrder.deliverySlot}
-                    </span>
-                    <Link
-                      to={`/order-tracking/${activeOrder.orderNumber}`}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors"
-                    >
-                      <span>Track Order</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
+                  ))}
                 </div>
               ) : (
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
                   <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-brand-600" /> Welcome to Shulov Fresh!
+                    <ShoppingBag className="w-5 h-5 text-brand-600" /> No Pending Orders
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    You have no active orders currently. Explore over 5,000+ organic vegetables, fresh milk, daily fruits, and pantry items with 30-minute delivery.
+                    You have no active or pending orders currently. Explore over 5,000+ organic vegetables, fresh milk, daily fruits, and pantry items with express delivery.
                   </p>
                   <Link
                     to="/"
@@ -302,35 +368,40 @@ export const CustomerPortalPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 2: ORDERS */}
+          {/* TAB 2: ORDERS — Shows ONLY Completed / Delivered Orders */}
           {activeTab === 'orders' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h3 className="font-extrabold text-lg text-slate-900">Grocery Order History</h3>
-                <span className="text-xs font-semibold text-slate-500">{orders.length} orders placed</span>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900">Completed Orders & Invoices</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Orders move here once delivered and completed.</p>
+                </div>
+                <span className="text-xs font-semibold text-slate-500">{completedOrders.length} completed</span>
               </div>
 
               {isLoadingOrders ? (
                 <div className="p-8 text-center text-xs font-bold text-slate-400">Loading your orders...</div>
-              ) : orders.length === 0 ? (
+              ) : completedOrders.length === 0 ? (
                 <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
                     <PackageCheck className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-extrabold text-base text-slate-800">No Orders Yet</h4>
-                    <p className="text-xs text-slate-500">Your order history is currently empty.</p>
+                    <h4 className="font-extrabold text-base text-slate-800">No Completed Orders Yet</h4>
+                    <p className="text-xs text-slate-500">
+                      Once your pending orders are marked as completed or delivered by the store manager, they will appear here with full invoices.
+                    </p>
                   </div>
-                  <Link
-                    to="/"
+                  <button
+                    onClick={() => setActiveTab('overview')}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-500 text-white font-extrabold text-xs rounded-xl shadow-soft hover:bg-brand-600 transition-colors"
                   >
-                    Start Grocery Shopping
-                  </Link>
+                    View Pending Orders ({pendingOrders.length})
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {orders.map((ord) => (
+                  {completedOrders.map((ord) => (
                     <div key={ord.id} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                         <div>
@@ -363,9 +434,9 @@ export const CustomerPortalPage: React.FC = () => {
                         <span className="text-slate-500 font-medium">Slot: {ord.deliverySlot}</span>
                         <Link
                           to={`/order-tracking/${ord.orderNumber}`}
-                          className="px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl transition-colors"
+                          className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors"
                         >
-                          Track Order
+                          View Invoice & Tracking
                         </Link>
                       </div>
                     </div>
