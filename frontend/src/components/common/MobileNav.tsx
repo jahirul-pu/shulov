@@ -1,23 +1,62 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, LayoutGrid, ShoppingBag, Heart, User, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, LayoutGrid, Search, ShoppingBag, User, X, Plus } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { useWishlist } from '../../context/WishlistContext';
 import { MegaMenu } from './MegaMenu';
+import { Product } from '../../types';
+import { getPrimaryProductImage } from '../../utils/image';
 
 export const MobileNav: React.FC = () => {
   const location = useLocation();
-  const { cart, total, setIsCartOpen } = useCart();
-  const { wishlist } = useWishlist();
+  const navigate = useNavigate();
+  const { cart, addToCart, setIsCartOpen } = useCart();
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
 
+  // Mobile search state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mobileQuery, setMobileQuery] = useState('');
+  const [mobileResults, setMobileResults] = useState<Product[]>([]);
+  const [isSearchingMobile, setIsSearchingMobile] = useState(false);
+
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Live mobile search fetch
+  useEffect(() => {
+    if (!mobileQuery.trim()) {
+      setMobileResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingMobile(true);
+      try {
+        const res = await fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(mobileQuery)}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.products)) {
+          setMobileResults(data.products);
+        }
+      } catch (err) {
+        console.error('Mobile search error:', err);
+      } finally {
+        setIsSearchingMobile(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [mobileQuery]);
+
+  const handleMobileSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mobileQuery.trim()) {
+      setIsSearchOpen(false);
+      navigate(`/category/fresh-produce?search=${encodeURIComponent(mobileQuery)}`);
+    }
+  };
 
   const navItems = [
     { label: 'Home', path: '/', icon: Home },
     { label: 'Categories', path: '#categories', icon: LayoutGrid, action: () => setIsCategoryDrawerOpen(true) },
+    { label: 'Search', path: '#search', icon: Search, action: () => setIsSearchOpen(true) },
     { label: 'Cart', path: '#cart', icon: ShoppingBag, badge: totalCartCount, action: () => setIsCartOpen(true) },
-    { label: 'Wishlist', path: '/wishlist', icon: Heart, badge: wishlist.length },
     { label: 'Account', path: '/account', icon: User },
   ];
 
@@ -40,6 +79,121 @@ export const MobileNav: React.FC = () => {
           </div>
           <div className="flex-1 overflow-y-auto p-4">
             <MegaMenu isOpen={true} onClose={() => setIsCategoryDrawerOpen(false)} isMobileInline={true} />
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen Search Modal for Mobile */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[120] md:hidden bg-white flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-200">
+          {/* Header Search Form */}
+          <div className="p-4 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
+            <form onSubmit={handleMobileSearchSubmit} className="flex-1 relative flex items-center">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search products..."
+                value={mobileQuery}
+                onChange={(e) => setMobileQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 focus:border-brand-500 rounded-2xl text-xs font-semibold focus:outline-none shadow-xs"
+              />
+              {mobileQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMobileQuery('')}
+                  className="absolute right-3 text-xs text-slate-400 hover:text-slate-600 font-bold"
+                >
+                  Clear
+                </button>
+              )}
+            </form>
+            <button
+              onClick={() => setIsSearchOpen(false)}
+              className="p-2 text-slate-500 hover:text-slate-900 font-bold text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+
+          {/* Search Content Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Quick Popular Tags */}
+            {!mobileQuery && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Popular Searches</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['Apples', 'Milk', 'Eggs', 'Spinach', 'Sourdough', 'Chicken', 'Honey', 'Rice'].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setMobileQuery(tag)}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Loading Indicator */}
+            {isSearchingMobile && (
+              <div className="text-center py-6 text-xs text-brand-600 font-bold animate-pulse">
+                Searching product catalog...
+              </div>
+            )}
+
+            {/* Mobile Search Results List */}
+            {mobileResults.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                  Products Found ({mobileResults.length})
+                </h4>
+                <div className="divide-y divide-slate-100 border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-xs">
+                  {mobileResults.map((product) => {
+                    const img = getPrimaryProductImage(product.images);
+                    const mainVariant = product.variants?.[0] || { id: 'v1', weight: '1kg', price: 4.49 };
+
+                    return (
+                      <div
+                        key={product.id}
+                        className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors"
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          navigate(`/product/${product.slug}`);
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img src={img} alt={product.name} className="w-12 h-12 rounded-xl object-contain border border-slate-100 bg-slate-50" />
+                          <div>
+                            <h5 className="font-bold text-xs text-slate-800 line-clamp-1">{product.name}</h5>
+                            <span className="text-[10px] text-slate-400 font-semibold">{mainVariant.weight} • {product.brand}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-extrabold text-xs text-brand-600">৳{Math.round(mainVariant.price)}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(product, mainVariant, 1);
+                            }}
+                            className="px-2.5 py-1 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Add
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {mobileQuery && !isSearchingMobile && mobileResults.length === 0 && (
+              <div className="text-center py-10 text-slate-400 text-xs font-medium">
+                No products found matching "{mobileQuery}"
+              </div>
+            )}
           </div>
         </div>
       )}

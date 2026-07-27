@@ -434,7 +434,7 @@ export const ProductDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500 mt-0.5">Customer favorites & top-trending items</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {fallbackPopular.map((popProd) => (
               <ProductCard key={popProd.id} product={popProd} />
             ))}

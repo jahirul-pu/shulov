@@ -26,20 +26,19 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ products }) => {
   const displayProducts = (flashProducts.length > 0 ? flashProducts : products).slice(0, 4);
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+    <section className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-2.5">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
             <Flame className="w-5 h-5 fill-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">Today's Flash Deals</h2>
+              <h2 className="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight">Today's Flash Deals</h2>
               <span className="text-[9px] font-extrabold px-2 py-0.5 bg-amber-500 text-white rounded-full uppercase tracking-wider">
                 Up to 40% Off
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">Limited stock items available at wholesale prices.</p>
           </div>
         </div>
 
@@ -63,8 +62,8 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ products }) => {
         </div>
       </div>
 
-      {/* Product Cards Grid — Standard 4-column layout matching regular product grids */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* Product Cards Grid — Standard 2-col on mobile, 4-col on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {displayProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

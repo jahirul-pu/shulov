@@ -113,7 +113,7 @@ export const Header: React.FC = () => {
 
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-6">
-        <div className="flex items-center justify-between w-full md:w-auto">
+        <div className="flex items-center justify-center md:justify-start w-full md:w-auto py-0.5">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-soft group-hover:scale-105 transition-transform">
@@ -125,17 +125,6 @@ export const Header: React.FC = () => {
               </span>
             </div>
           </Link>
-
-          {/* Quick Mobile Cart Action */}
-          <div className="flex items-center gap-2 md:hidden">
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="px-2.5 py-1.5 bg-transparent hover:bg-slate-100 text-slate-800 rounded-xl font-extrabold text-xs flex items-center gap-1.5 transition-colors border border-slate-200"
-            >
-              <ShoppingBag className="w-4 h-4 text-brand-600" />
-              <span>৳{total.toFixed(0)}</span>
-            </button>
-          </div>
         </div>
 
         {/* Categories Mega Menu Trigger (Desktop Only) */}
@@ -153,8 +142,8 @@ export const Header: React.FC = () => {
           <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
         </div>
 
-        {/* Search Bar */}
-        <div ref={searchContainerRef} className="flex-1 max-w-xl relative">
+        {/* Search Bar (Desktop Only) */}
+        <div ref={searchContainerRef} className="hidden md:block flex-1 max-w-xl relative">
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <input
               type="text"

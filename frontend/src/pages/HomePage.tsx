@@ -32,7 +32,7 @@ export const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-14 py-8">
+    <div className="space-y-7 sm:space-y-9 py-3 sm:py-5">
       {/* Hero Slider */}
       <HeroCarousel />
 
@@ -43,18 +43,17 @@ export const HomePage: React.FC = () => {
       <FlashDeals products={products} />
 
       {/* Featured Products */}
-      <section className="space-y-6">
+      <section className="space-y-3.5">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-brand-500 fill-brand-100" />
-              <h2 className="font-extrabold text-2xl text-slate-900 tracking-tight">Fresh Picked for You</h2>
+              <h2 className="font-extrabold text-lg sm:text-2xl text-slate-900 tracking-tight">Fresh Picked for You</h2>
             </div>
-            <p className="text-xs text-slate-500 mt-1">Recommended daily fresh produce based on popular demand.</p>
           </div>
           <Link
             to="/category/fresh-produce"
-            className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 group"
+            className="text-[11px] sm:text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 group"
           >
             <span>Explore All Products</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -62,7 +61,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {[1, 2, 3, 4].map((n) => (
               <div key={n} className="h-72 bg-slate-100 rounded-2xl animate-pulse" />
             ))}
@@ -78,7 +77,7 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

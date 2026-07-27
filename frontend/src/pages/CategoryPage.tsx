@@ -277,7 +277,7 @@ export const CategoryPage: React.FC = () => {
         {/* Product Cards Grid */}
         <main className="lg:col-span-3">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="h-72 bg-slate-100 rounded-2xl animate-pulse" />
               ))}
@@ -291,7 +291,7 @@ export const CategoryPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

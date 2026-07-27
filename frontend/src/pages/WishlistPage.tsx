@@ -57,7 +57,7 @@ export const WishlistPage: React.FC = () => {
       </div>
 
       {/* Saved Items Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {wishlist.map((product) => {
           const img = getPrimaryProductImage(product.images);
           const mainVariant = product.variants[0] || { weight: '1kg', price: 440.0, originalPrice: 500.0 };

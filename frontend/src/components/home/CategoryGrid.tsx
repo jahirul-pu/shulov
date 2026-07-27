@@ -49,30 +49,29 @@ export const CategoryGrid: React.FC = () => {
   ];
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-2.5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">Shop by Grocery Category</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">Explore our farm-fresh produce and daily household departments.</p>
+          <h2 className="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight">Shop by Grocery Category</h2>
         </div>
         <Link
           to="/category/fresh-produce"
-          className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 group"
+          className="text-[11px] sm:text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 group"
         >
           <span>View All Categories</span>
           <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+      <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 overflow-x-auto sm:overflow-x-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1 sm:pb-0 scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
         {categories.map((cat) => {
           return (
             <Link
               key={cat.slug}
               to={`/category/${cat.slug}`}
-              className={`p-3 rounded-2xl border transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center group ${cat.bgColor}`}
+              className={`min-w-[125px] sm:min-w-0 flex-1 shrink-0 sm:shrink p-3 rounded-2xl border transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center group ${cat.bgColor}`}
             >
-              <div className="w-12 h-12 rounded-full bg-white shadow-soft overflow-hidden p-0.5 mb-2 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-soft overflow-hidden p-0.5 mb-2 group-hover:scale-105 transition-transform">
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-full" />
               </div>
               <h3 className="font-extrabold text-xs sm:text-sm text-slate-800 group-hover:text-brand-700 transition-colors line-clamp-1">
