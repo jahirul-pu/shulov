@@ -59,7 +59,11 @@ export const CheckoutPage: React.FC = () => {
       });
 
       const data = await res.json();
-      const orderNum = data.order ? data.order.orderNumber : `SHL-${Date.now().toString().slice(-6)}`;
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to place order.');
+      }
+
+      const orderNum = data.order.orderNumber;
 
       // Confetti celebration
       confetti({
@@ -71,12 +75,10 @@ export const CheckoutPage: React.FC = () => {
       clearCart();
       setIsSubmitting(false);
       navigate(`/order-tracking/${orderNum}`);
-    } catch (err) {
-      // Fallback redirect
-      confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
-      clearCart();
+    } catch (err: any) {
+      console.error('Order placement failed:', err);
+      alert(err.message || 'Failed to place order. Please try again.');
       setIsSubmitting(false);
-      navigate(`/order-tracking/SHL-882910-412`);
     }
   };
 

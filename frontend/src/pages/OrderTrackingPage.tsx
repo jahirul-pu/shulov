@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Clock, PackageCheck, Truck, MapPin, PhoneCall, Sparkles, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, PackageCheck, Truck, MapPin, PhoneCall, Sparkles, AlertCircle, ShoppingBag } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 export const OrderTrackingPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
 
+  const [order, setOrder] = useState<any | null>(null);
   const [orderStatus, setOrderStatus] = useState<string>('PROCESSING');
-  const [driverLocation, setDriverLocation] = useState({ lat: 23.7937, lng: 90.4066, address: 'Banani Road 11' });
   const [etaMinutes, setEtaMinutes] = useState(14);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Attempt backend fetch
+    if (!orderId) return;
+
+    setIsLoading(true);
     fetch(`http://localhost:5000/api/orders/${orderId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.order) setOrderStatus(data.order.status);
+        if (data.order) {
+          setOrder(data.order);
+          setOrderStatus(data.order.status || 'PROCESSING');
+        }
       })
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch order details:', err))
+      .finally(() => setIsLoading(false));
 
     // Socket listener for live tracking updates
     const socket = io('http://localhost:5000');
@@ -27,7 +34,6 @@ export const OrderTrackingPage: React.FC = () => {
       if (data.status) setOrderStatus(data.status);
     });
 
-    // Countdown ETA simulation
     const interval = setInterval(() => {
       setEtaMinutes((prev) => (prev > 1 ? prev - 1 : 1));
     }, 15000);
@@ -48,6 +54,12 @@ export const OrderTrackingPage: React.FC = () => {
   const currentStepIndex = steps.findIndex((s) => s.key === orderStatus);
   const activeStep = currentStepIndex >= 0 ? currentStepIndex : 1;
 
+  const customerName = order?.user?.name || 'Valued Customer';
+  const customerAddress = order?.deliveryAddress || 'Address specified at checkout';
+  const deliverySlot = order?.deliverySlot || 'Today, 4:00 PM - 6:00 PM';
+  const items = order?.items || [];
+  const totalAmount = order?.netAmount || order?.totalAmount || 0;
+
   return (
     <div className="py-8 space-y-8 max-w-4xl mx-auto">
       {/* Top Banner */}
@@ -56,7 +68,7 @@ export const OrderTrackingPage: React.FC = () => {
           <span className="px-3 py-1 bg-brand-500 text-white font-extrabold text-xs rounded-full uppercase flex items-center gap-1.5 w-fit">
             <Sparkles className="w-3.5 h-3.5 fill-white/20" /> Live Express Tracking
           </span>
-          <h1 className="font-extrabold text-3xl">Order #{orderId || 'SHL-882910'}</h1>
+          <h1 className="font-extrabold text-3xl">Order #{orderId}</h1>
           <p className="text-xs text-slate-300">Guaranteed Fresh Delivery by Shulov Express Fleet</p>
         </div>
 
@@ -76,7 +88,6 @@ export const OrderTrackingPage: React.FC = () => {
           {steps.map((step, idx) => {
             const Icon = step.icon;
             const isCompleted = idx <= activeStep;
-            const isCurrent = idx === activeStep;
 
             return (
               <div key={step.key} className="flex-1 flex flex-row md:flex-col items-center gap-4 relative z-10">
@@ -101,6 +112,29 @@ export const OrderTrackingPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Order Items & Summary */}
+      {items.length > 0 && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+          <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
+            <ShoppingBag className="w-4 h-4 text-brand-600" /> Ordered Items ({items.length})
+          </h3>
+          <div className="divide-y divide-slate-100 space-y-2 text-xs">
+            {items.map((it: any) => (
+              <div key={it.id} className="flex justify-between pt-2">
+                <span>
+                  <strong className="text-slate-900">{it.quantity}x</strong> {it.productName} ({it.variantName})
+                </span>
+                <span className="font-bold text-slate-900">৳{it.totalPrice?.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between font-extrabold text-sm text-slate-900 pt-3 border-t border-slate-100">
+            <span>Total Paid Amount:</span>
+            <span className="text-brand-600">৳{totalAmount.toFixed(2)}</span>
+          </div>
+        </div>
+      )}
 
       {/* Driver & Delivery Information Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -132,11 +166,9 @@ export const OrderTrackingPage: React.FC = () => {
             <MapPin className="w-4 h-4 text-brand-600" /> Destination Address
           </h3>
           <div className="p-4 bg-surface-50 rounded-2xl border border-slate-100 space-y-1 text-xs">
-            <span className="font-extrabold text-slate-900 block">Rahim Chowdhury</span>
-            <p className="text-slate-600 leading-relaxed">
-              House 42, Road 11, Banani, Dhaka (1213)
-            </p>
-            <span className="text-emerald-600 font-bold block pt-1">Slot: Today, 4:00 PM - 6:00 PM</span>
+            <span className="font-extrabold text-slate-900 block">{customerName}</span>
+            <p className="text-slate-600 leading-relaxed">{customerAddress}</p>
+            <span className="text-emerald-600 font-bold block pt-1">Slot: {deliverySlot}</span>
           </div>
         </div>
       </div>
