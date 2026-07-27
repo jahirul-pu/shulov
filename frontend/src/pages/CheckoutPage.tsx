@@ -38,6 +38,7 @@ export const CheckoutPage: React.FC = () => {
 
     try {
       const orderData = {
+        userId: user?.id,
         items: cart.map((i) => ({ variantId: i.variant.id, quantity: i.quantity })),
         customerName,
         customerPhone,

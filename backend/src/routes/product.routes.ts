@@ -5,16 +5,21 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 // Get Products (with Search & Category Filtering)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { search, category, isOrganic, isFlashDeal } = req.query;
 
-    let filtered = customProductsCatalog.filter((p) => !p.isHidden);
+    const dbProducts = await prisma.product.findMany({
+      include: { category: true, subcategory: true, variants: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let filtered = dbProducts.length > 0 ? dbProducts : customProductsCatalog.filter((p) => !p.isHidden);
 
     if (search) {
       const q = (search as string).toLowerCase();
       filtered = filtered.filter(
-        (p) =>
+        (p: any) =>
           p.name?.toLowerCase().includes(q) ||
           p.brand?.toLowerCase().includes(q) ||
           p.description?.toLowerCase().includes(q)
@@ -24,18 +29,18 @@ router.get('/', (req, res) => {
     if (category) {
       const catSlug = (category as string).toLowerCase();
       filtered = filtered.filter(
-        (p) =>
+        (p: any) =>
           p.category?.slug === catSlug ||
           p.category?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === catSlug
       );
     }
 
     if (isOrganic === 'true') {
-      filtered = filtered.filter((p) => p.isOrganic);
+      filtered = filtered.filter((p: any) => p.isOrganic);
     }
 
     if (isFlashDeal === 'true') {
-      filtered = filtered.filter((p) => p.isFlashDeal);
+      filtered = filtered.filter((p: any) => p.isFlashDeal);
     }
 
     return res.json({ products: filtered, pagination: { total: filtered.length, page: 1, totalPages: 1 } });
@@ -44,14 +49,40 @@ router.get('/', (req, res) => {
   }
 });
 
+// Return full catalog
+router.get('/all-catalog', async (req, res) => {
+  try {
+    const dbProducts = await prisma.product.findMany({
+      include: { category: true, subcategory: true, variants: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (dbProducts.length > 0) {
+      return res.json({ products: dbProducts });
+    }
+    return res.json({ products: customProductsCatalog });
+  } catch (e) {
+    return res.json({ products: customProductsCatalog });
+  }
+});
+
 // Get Single Product by Slug or ID
-router.get('/:identifier', (req, res) => {
+router.get('/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params;
 
-    const product = customProductsCatalog.find(
-      (p) => p.id === identifier || p.slug === identifier
-    );
+    let product: any = await prisma.product.findFirst({
+      where: {
+        OR: [{ id: identifier }, { slug: identifier }],
+      },
+      include: { category: true, subcategory: true, variants: true, reviews: true },
+    });
+
+    if (!product) {
+      product = customProductsCatalog.find(
+        (p) => p.id === identifier || p.slug === identifier
+      );
+    }
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

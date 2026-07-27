@@ -60,41 +60,70 @@ router.post('/', async (req: AuthRequest, res) => {
       return res.status(400).json({ message: 'Delivery address is required' });
     }
 
-    // Determine target user ID (from Auth token or lookup/create user)
-    let targetUserId = '';
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // Determine target user ID (from Auth token, req.body.userId, or lookup/create user)
+    let targetUserId = req.body.userId || '';
 
-    if (token) {
-      try {
-        const JWT_SECRET = process.env.JWT_SECRET || 'shulov-secret-key-2026';
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        if (decoded && decoded.id) {
-          targetUserId = decoded.id;
-        }
-      } catch (e) {
-        // Token invalid, fall back to guest lookup
+    if (targetUserId) {
+      const existingUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+      if (!existingUser) {
+        targetUserId = '';
       }
     }
 
     if (!targetUserId) {
-      const phone = customerPhone ? customerPhone.trim() : '';
-      const email = customerEmail ? customerEmail.trim().toLowerCase() : '';
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+
+      if (token) {
+        try {
+          const JWT_SECRET = process.env.JWT_SECRET || 'shulov-secret-key-2026';
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(token, JWT_SECRET) as any;
+          if (decoded && decoded.id) {
+            const tokenUser = await prisma.user.findUnique({ where: { id: decoded.id } });
+            if (tokenUser) {
+              targetUserId = tokenUser.id;
+            }
+          }
+        } catch (e) {
+          // Fall through to lookup by phone/email
+        }
+      }
+    }
+
+    if (!targetUserId) {
+      const rawPhone = customerPhone ? customerPhone.trim() : '';
+      const rawEmail = customerEmail ? customerEmail.trim().toLowerCase() : '';
+
+      const cleanPhoneDigits = rawPhone.replace(/\D/g, '').replace(/^880/, '0');
 
       let user = null;
-      if (email) user = await prisma.user.findUnique({ where: { email } });
-      if (!user && phone) user = await prisma.user.findFirst({ where: { phone } });
+      if (rawEmail) {
+        user = await prisma.user.findUnique({ where: { email: rawEmail } });
+      }
+
+      if (!user && cleanPhoneDigits) {
+        const allUsers = await prisma.user.findMany({ select: { id: true, phone: true } });
+        user = allUsers.find((u) => {
+          if (!u.phone) return false;
+          const uClean = u.phone.replace(/\D/g, '').replace(/^880/, '0');
+          return uClean === cleanPhoneDigits;
+        }) as any;
+
+        if (user) {
+          user = await prisma.user.findUnique({ where: { id: user.id } });
+        }
+      }
 
       if (!user) {
         const bcrypt = require('bcryptjs');
-        const userEmail = email || `${phone.replace(/\D/g, '') || Date.now()}@shulov.user`;
+        const userEmail = rawEmail || `${cleanPhoneDigits || Date.now()}@shulov.user`;
         const userPassword = await bcrypt.hash('user123', 10);
         user = await prisma.user.create({
           data: {
             name: customerName || 'Grocery Customer',
             email: userEmail,
-            phone: phone || '',
+            phone: rawPhone || '',
             password: userPassword,
             address: deliveryAddress || '',
             role: 'CUSTOMER',
