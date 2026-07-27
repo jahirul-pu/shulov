@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, Trash2, ShoppingBag, Plus, Minus, ArrowRight, Truck, Tag, Check, Sparkles } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 
 export const CartDrawer: React.FC = () => {
@@ -12,35 +12,11 @@ export const CartDrawer: React.FC = () => {
     removeFromCart,
     subtotal,
     discountAmount,
-    deliveryFee,
-    tax,
-    total,
     appliedCoupon,
-    setAppliedCoupon,
+    total,
   } = useCart();
 
-  const [couponCode, setCouponCode] = useState('');
-  const [couponError, setCouponError] = useState('');
-  const [couponSuccess, setCouponSuccess] = useState('');
-
   if (!isCartOpen) return null;
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCouponError('');
-    setCouponSuccess('');
-
-    if (couponCode.toUpperCase() === 'WELCOME20') {
-      const discount = Math.round(subtotal * 0.2 * 100) / 100;
-      setAppliedCoupon({ code: 'WELCOME20', discountAmount: discount });
-      setCouponSuccess('20% Discount applied successfully!');
-    } else if (couponCode.toUpperCase() === 'FRESH5') {
-      setAppliedCoupon({ code: 'FRESH5', discountAmount: 50.0 });
-      setCouponSuccess('৳50.00 Discount applied!');
-    } else {
-      setCouponError('Invalid coupon code. Try "WELCOME20"');
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -153,33 +129,6 @@ export const CartDrawer: React.FC = () => {
           {/* Footer & Checkout Breakdown */}
           {cart.length > 0 && (
             <div className="p-6 bg-slate-50 border-t border-slate-200 space-y-4">
-              {/* Promo Code Box */}
-              <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    placeholder="Coupon code (e.g. WELCOME20)"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 uppercase font-semibold"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors shrink-0"
-                >
-                  Apply
-                </button>
-              </form>
-
-              {couponSuccess && (
-                <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                  <Check className="w-3 h-3" /> {couponSuccess}
-                </p>
-              )}
-              {couponError && <p className="text-[11px] text-red-500 font-semibold">{couponError}</p>}
-
               {/* Price Details */}
               <div className="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-slate-200/80">
                 <div className="flex justify-between">

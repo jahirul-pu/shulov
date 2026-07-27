@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Banknote, Wallet, Check, ShieldCheck, Sparkles, ArrowRight, User as UserIcon, PhoneCall, Mail, Truck } from 'lucide-react';
+import { MapPin, CreditCard, Banknote, Wallet, Check, ShieldCheck, Sparkles, ArrowRight, User as UserIcon, PhoneCall, Mail, Truck, Tag, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import confetti from 'canvas-confetti';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, subtotal, discountAmount, tax, clearCart } = useCart();
+  const { cart, subtotal, discountAmount, tax, clearCart, appliedCoupon, setAppliedCoupon } = useCart();
   const { user, token } = useAuth();
 
   const [customerName, setCustomerName] = useState(user?.name || '');
@@ -17,6 +17,9 @@ export const CheckoutPage: React.FC = () => {
   const [deliveryZone, setDeliveryZone] = useState<'INSIDE_DHAKA' | 'OUTSIDE_DHAKA'>('INSIDE_DHAKA');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'CARD' | 'WALLET'>('COD');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
 
   // Delivery settings from Admin API
   const [deliverySettings, setDeliverySettings] = useState({
@@ -52,6 +55,30 @@ export const CheckoutPage: React.FC = () => {
 
   const activeDeliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? deliverySettings.outsideDhaka : deliverySettings.insideDhaka;
   const computedNetTotal = Math.round((subtotal - discountAmount + activeDeliveryFee + tax) * 100) / 100;
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCouponError('');
+    setCouponSuccess('');
+    const code = couponCode.toUpperCase();
+    if (code === 'WELCOME20') {
+      const discount = Math.round(subtotal * 0.2 * 100) / 100;
+      setAppliedCoupon({ code: 'WELCOME20', discountAmount: discount });
+      setCouponSuccess('20% discount applied successfully!');
+    } else if (code === 'FRESH5') {
+      setAppliedCoupon({ code: 'FRESH5', discountAmount: 50.0 });
+      setCouponSuccess('৳50.00 discount applied!');
+    } else {
+      setCouponError('Invalid coupon code. Try "WELCOME20" or "FRESH5".');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponSuccess('');
+    setCouponError('');
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -370,6 +397,57 @@ export const CheckoutPage: React.FC = () => {
                 <span>Total Amount:</span>
                 <span className="text-brand-600">৳{computedNetTotal.toFixed(2)}</span>
               </div>
+            </div>
+
+            {/* Coupon Code */}
+            <div className="pt-1 border-t border-slate-100 space-y-2">
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <div>
+                      <span className="text-xs font-extrabold text-emerald-700">{appliedCoupon.code}</span>
+                      <p className="text-[11px] text-emerald-600">-৳{appliedCoupon.discountAmount.toFixed(2)} off</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Promo / coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="w-full pl-8 pr-2 py-2 text-xs font-semibold bg-surface-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 uppercase tracking-wider"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-2 bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl transition-colors shrink-0"
+                  >
+                    Apply
+                  </button>
+                </form>
+              )}
+              {couponError && (
+                <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                  <X className="w-3 h-3" /> {couponError}
+                </p>
+              )}
+              {couponSuccess && (
+                <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                  <Check className="w-3 h-3" /> {couponSuccess}
+                </p>
+              )}
             </div>
 
             <button
