@@ -25,7 +25,7 @@ export const App: React.FC = () => {
     <AuthProvider>
       <WishlistProvider>
         <CartProvider>
-          <Router>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <div className="min-h-screen flex flex-col bg-[#F8FAFC] overflow-x-clip">
               <Header />
               <CartDrawer />

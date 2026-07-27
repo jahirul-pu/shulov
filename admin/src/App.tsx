@@ -12,7 +12,7 @@ import { PopupsPage } from './pages/PopupsPage';
 
 export const App: React.FC = () => {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AdminLayout>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
