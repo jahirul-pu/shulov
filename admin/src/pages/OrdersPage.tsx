@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Truck, CheckCircle2, Clock, Printer, User, MapPin, ChevronRight, X } from 'lucide-react';
+import { ShoppingBag, Truck, CheckCircle2, Clock, Printer, User, MapPin, ChevronRight, X, PhoneCall } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 export const OrdersPage: React.FC = () => {
@@ -95,14 +95,33 @@ export const OrdersPage: React.FC = () => {
                     className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono font-bold text-slate-900">{ord.orderNumber || ord.id}</span>
-                      <span className="font-extrabold text-brand-600">৳{ord.netAmount ? ord.netAmount.toFixed(2) : '345.00'}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono font-bold text-slate-900">{ord.orderNumber || ord.id}</span>
+                        {ord.paymentStatus === 'PAID' ? (
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200 uppercase">
+                            PAID
+                          </span>
+                        ) : ord.paymentMethod === 'COD' ? (
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200 uppercase">
+                            COD
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-200 uppercase">
+                            UNPAID
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-extrabold text-brand-600">৳{ord.netAmount ? ord.netAmount.toFixed(2) : '0.00'}</span>
                     </div>
 
                     <div className="space-y-1 text-xs text-slate-600">
                       <div className="flex items-center gap-1.5 font-bold text-slate-800">
                         <User className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{ord.user ? ord.user.name : 'Valued Customer'}</span>
+                        <span>{ord.user ? ord.user.name : (ord.customerName || 'Valued Customer')}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+                        <PhoneCall className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                        <span>{ord.user?.phone || ord.customerPhone || 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
