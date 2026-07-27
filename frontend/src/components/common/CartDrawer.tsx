@@ -192,14 +192,14 @@ export const CartDrawer: React.FC = () => {
                     <span>-৳{discountAmount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center text-slate-500">
                   <span>Delivery Fee</span>
-                  <span className="font-semibold text-slate-800">
-                    ৳{deliveryFee.toFixed(2)}
+                  <span className="font-bold text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    Calculated at Checkout
                   </span>
                 </div>
                 <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
-                  <span>Total Payable</span>
+                  <span>Subtotal</span>
                   <span className="text-brand-600">৳{total.toFixed(2)}</span>
                 </div>
               </div>

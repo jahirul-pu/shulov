@@ -67,9 +67,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const subtotal = cart.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const deliveryFee = cart.length === 0 ? 0 : 60.0;
+  const deliveryFee = 0;
   const tax = 0;
-  const total = Math.max(0, Math.round((subtotal - discountAmount + deliveryFee) * 100) / 100);
+  const total = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
 
   const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
