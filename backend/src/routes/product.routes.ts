@@ -361,10 +361,11 @@ router.post('/', async (req, res) => {
                 weight: v.weight || '1kg',
                 unit: 'kg',
                 price: parseFloat(v.price) || 2.5,
+                costPrice: parseFloat(v.costPrice) || Math.round((parseFloat(v.price) || 2.5) * 0.70 * 100) / 100,
                 stock: parseInt(v.stock, 10) || 50,
                 sku: v.sku || `SKU-${Date.now().toString().slice(-4)}`,
               }))
-            : [{ weight: '1kg', unit: 'kg', price: 3.5, stock: 50, sku: `SKU-${Date.now().toString().slice(-4)}` }],
+            : [{ weight: '1kg', unit: 'kg', price: 3.5, costPrice: 2.45, stock: 50, sku: `SKU-${Date.now().toString().slice(-4)}` }],
         },
       },
       include: { category: true, subcategory: true, variants: true },

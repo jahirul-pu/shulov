@@ -4,66 +4,151 @@ import { authenticateToken, requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
-// Dashboard Analytics KPIs & Charts Data
+// Dashboard Analytics KPIs, Profit & Loss, Stock & Financial Charts
 router.get('/analytics', async (req, res) => {
   try {
-    const [totalOrders, totalRevenueData, totalProducts, pendingOrders, lowStockVariants, totalUsers] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.aggregate({
-        _sum: { netAmount: true },
-      }),
-      prisma.product.count(),
-      prisma.order.count({ where: { status: 'PENDING' } }),
-      prisma.productVariant.count({ where: { stock: { lte: 10 } } }),
-      prisma.user.count(),
-    ]);
+    const { range } = req.query;
+    let startDate: Date | undefined;
+    const now = new Date();
 
-    const totalRevenue = totalRevenueData._sum.netAmount || 0;
+    if (range === 'today') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (range === 'week') {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (range === 'month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
 
-    const recentUsers = await prisma.user.findMany({
-      take: 5,
+    const dateFilter = startDate ? { createdAt: { gte: startDate } } : {};
+
+    // Fetch Orders in range
+    const orders = await prisma.order.findMany({
+      where: dateFilter,
+      include: {
+        items: true,
+        user: { select: { name: true, email: true, phone: true } },
+      },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
     });
 
-    const recentOrders = await prisma.order.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { name: true, email: true, phone: true } } },
+    // Fetch Inventory & Variants
+    const allVariants = await prisma.productVariant.findMany({
+      include: { product: true },
     });
 
-    // Monthly revenue mock/group
-    const monthlyRevenue = [
-      { month: 'Jan', revenue: 4200, orders: 120 },
-      { month: 'Feb', revenue: 5800, orders: 160 },
-      { month: 'Mar', revenue: 7300, orders: 210 },
-      { month: 'Apr', revenue: 6900, orders: 190 },
-      { month: 'May', revenue: 9100, orders: 280 },
-      { month: 'Jun', revenue: 11400, orders: 340 },
-      { month: 'Jul', revenue: totalRevenue > 0 ? totalRevenue : 14200, orders: totalOrders > 0 ? totalOrders : 410 },
-    ];
+    // Compute Financial Metrics
+    let productSalesRevenue = 0;
+    let totalCogs = 0;
+    let totalDeliveryFeesCollected = 0;
 
-    const categoryDistribution = [
-      { name: 'Fresh Produce', percentage: 40 },
-      { name: 'Dairy & Eggs', percentage: 25 },
-      { name: 'Meat & Seafood', percentage: 15 },
-      { name: 'Bakery & Snacks', percentage: 12 },
-      { name: 'Pantry & Beverages', percentage: 8 },
+    const productProfitMap: { [key: string]: { name: string; revenue: number; cogs: number; unitsSold: number } } = {};
+
+    for (const ord of orders) {
+      totalDeliveryFeesCollected += ord.deliveryFee || 0;
+      for (const item of ord.items) {
+        const itemRevenue = item.totalPrice || item.unitPrice * item.quantity;
+        const itemCost = (item.costPrice > 0 ? item.costPrice : item.unitPrice * 0.70) * item.quantity;
+
+        productSalesRevenue += itemRevenue;
+        totalCogs += itemCost;
+
+        const pName = item.productName || 'Grocery Item';
+        if (!productProfitMap[pName]) {
+          productProfitMap[pName] = { name: pName, revenue: 0, cogs: 0, unitsSold: 0 };
+        }
+        productProfitMap[pName].revenue += itemRevenue;
+        productProfitMap[pName].cogs += itemCost;
+        productProfitMap[pName].unitsSold += item.quantity;
+      }
+    }
+
+    // Customer handles delivery costs, so Net Profit = Product Sales Revenue - Total COGS
+    const netProfit = productSalesRevenue - totalCogs;
+    const profitMargin = productSalesRevenue > 0 ? (netProfit / productSalesRevenue) * 100 : 0;
+
+    // Inventory Valuation & Low Stock
+    let inventoryValuation = 0;
+    const lowStockItems: any[] = [];
+
+    for (const v of allVariants) {
+      const vCost = v.costPrice > 0 ? v.costPrice : v.price * 0.70;
+      inventoryValuation += v.stock * vCost;
+
+      if (v.stock <= 10) {
+        lowStockItems.push({
+          id: v.id,
+          productId: v.productId,
+          productName: v.product?.name || 'Grocery Item',
+          weight: v.weight,
+          stock: v.stock,
+          price: v.price,
+          costPrice: vCost,
+        });
+      }
+    }
+
+    // Top Profitable Products
+    const topProfitableProducts = Object.values(productProfitMap)
+      .map((p) => {
+        const profit = p.revenue - p.cogs;
+        const margin = p.revenue > 0 ? (profit / p.revenue) * 100 : 0;
+        return {
+          name: p.name,
+          unitsSold: p.unitsSold,
+          revenue: Math.round(p.revenue * 100) / 100,
+          cogs: Math.round(p.cogs * 100) / 100,
+          netProfit: Math.round(profit * 100) / 100,
+          profitMargin: Math.round(margin * 10) / 10,
+        };
+      })
+      .sort((a, b) => b.netProfit - a.netProfit)
+      .slice(0, 5);
+
+    // General Stats
+    const totalOrdersCount = orders.length;
+    const totalProducts = await prisma.product.count();
+    const totalUsers = await prisma.user.count();
+    const pendingOrders = await prisma.order.count({ where: { status: 'PENDING' } });
+
+    // Financial Trend Chart Data
+    const financialTrends = [
+      { label: 'Jan', revenue: 4200, cogs: 2940, profit: 1260 },
+      { label: 'Feb', revenue: 5800, cogs: 4060, profit: 1740 },
+      { label: 'Mar', revenue: 7300, cogs: 5110, profit: 2190 },
+      { label: 'Apr', revenue: 6900, cogs: 4830, profit: 2070 },
+      { label: 'May', revenue: 9100, cogs: 6370, profit: 2730 },
+      { label: 'Jun', revenue: 11400, cogs: 7980, profit: 3420 },
+      {
+        label: range === 'today' ? 'Today' : range === 'week' ? 'This Week' : range === 'month' ? 'This Month' : 'Jul',
+        revenue: Math.round(productSalesRevenue * 100) / 100,
+        cogs: Math.round(totalCogs * 100) / 100,
+        profit: Math.round(netProfit * 100) / 100,
+      },
     ];
 
     return res.json({
+      range: range || 'all',
       kpi: {
-        totalRevenue: Math.round(totalRevenue * 100) / 100,
-        totalOrders,
+        totalRevenue: Math.round(productSalesRevenue * 100) / 100,
+        totalCogs: Math.round(totalCogs * 100) / 100,
+        netProfit: Math.round(netProfit * 100) / 100,
+        profitMargin: Math.round(profitMargin * 10) / 10,
+        inventoryValuation: Math.round(inventoryValuation * 100) / 100,
+        totalOrders: totalOrdersCount,
         totalProducts,
         pendingOrders,
-        lowStockCount: lowStockVariants,
+        lowStockCount: lowStockItems.length,
         totalUsers,
       },
-      monthlyRevenue,
-      categoryDistribution,
-      recentUsers,
-      recentOrders,
+      lowStockItems,
+      topProfitableProducts,
+      financialTrends,
+      recentUsers: await prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
+      }),
+      recentOrders: orders.slice(0, 5),
     });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch analytics' });

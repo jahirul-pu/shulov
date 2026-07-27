@@ -6,6 +6,7 @@ interface VariantState {
   id: string;
   weight: string;
   price: string | number;
+  costPrice?: string | number;
   stock: string | number;
   sku?: string;
 }
@@ -576,7 +577,7 @@ export const ProductsPage: React.FC = () => {
                       key={variant.id || index}
                       className="p-3 bg-surface-50 border border-slate-200 rounded-2xl grid grid-cols-12 gap-3 items-center"
                     >
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Weight / Size</label>
                         <input
                           type="text"
@@ -589,7 +590,19 @@ export const ProductsPage: React.FC = () => {
                       </div>
 
                       <div className="col-span-3">
-                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Price (৳)</label>
+                        <label className="block text-[10px] font-extrabold text-rose-600 mb-0.5">Cost Price (৳)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.costPrice || ''}
+                          onChange={(e) => handleUpdateEditVariant(index, 'costPrice', e.target.value)}
+                          placeholder="Cost Price"
+                          className="w-full p-2 bg-white border border-rose-200 rounded-xl font-bold text-xs text-rose-700"
+                        />
+                      </div>
+
+                      <div className="col-span-3">
+                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Selling Price (৳)</label>
                         <input
                           type="number"
                           step="0.01"
@@ -601,8 +614,8 @@ export const ProductsPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="col-span-3">
-                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Stock Count</label>
+                      <div className="col-span-2">
+                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Stock</label>
                         <input
                           type="number"
                           value={variant.stock}
@@ -613,12 +626,12 @@ export const ProductsPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="col-span-2 flex justify-end pt-3">
+                      <div className="col-span-1 flex justify-end pt-3">
                         <button
                           type="button"
                           onClick={() => handleDeleteEditVariant(index)}
                           disabled={editVariants.length <= 1}
-                          className="p-2 text-slate-400 hover:text-red-600 disabled:opacity-30 rounded-xl transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-30 rounded-xl transition-colors"
                           title="Delete variant"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -821,7 +834,7 @@ export const ProductsPage: React.FC = () => {
                       key={variant.id || index}
                       className="p-3 bg-surface-50 border border-slate-200 rounded-2xl grid grid-cols-12 gap-3 items-center"
                     >
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Weight / Size</label>
                         <input
                           type="text"
@@ -834,7 +847,19 @@ export const ProductsPage: React.FC = () => {
                       </div>
 
                       <div className="col-span-3">
-                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Price (৳)</label>
+                        <label className="block text-[10px] font-extrabold text-rose-600 mb-0.5">Cost Price (৳)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.costPrice || ''}
+                          onChange={(e) => handleUpdateNewVariant(index, 'costPrice', e.target.value)}
+                          placeholder="Cost Price"
+                          className="w-full p-2 bg-white border border-rose-200 rounded-xl font-bold text-xs text-rose-700"
+                        />
+                      </div>
+
+                      <div className="col-span-3">
+                        <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Selling Price (৳)</label>
                         <input
                           type="number"
                           step="0.01"
@@ -846,7 +871,7 @@ export const ProductsPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                         <label className="block text-[10px] font-extrabold text-slate-500 mb-0.5">Initial Stock</label>
                         <input
                           type="number"
@@ -858,12 +883,12 @@ export const ProductsPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="col-span-2 flex justify-end pt-3">
+                      <div className="col-span-1 flex justify-end pt-3">
                         <button
                           type="button"
                           onClick={() => handleDeleteNewVariant(index)}
                           disabled={newProdVariants.length <= 1}
-                          className="p-2 text-slate-400 hover:text-red-600 disabled:opacity-30 rounded-xl transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-30 rounded-xl transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

@@ -70,6 +70,7 @@ model ProductVariant {
   weight        String      // e.g., "500g", "1kg", "2L"
   unit          String      @default("kg")
   price         Float
+  costPrice     Float       @default(0)
   originalPrice Float?
   stock         Int         @default(50)
   sku           String      @unique
@@ -127,6 +128,7 @@ model OrderItem {
   productName String
   variantName String
   unitPrice   Float
+  costPrice   Float          @default(0)
   quantity    Int
   totalPrice  Float
 }

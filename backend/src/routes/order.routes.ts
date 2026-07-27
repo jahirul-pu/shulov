@@ -158,14 +158,29 @@ router.post('/', async (req: AuthRequest, res) => {
       const itemTotal = Math.round(variant.price * quantity * 100) / 100;
       totalAmount += itemTotal;
 
+      const unitCost = variant.costPrice > 0 ? variant.costPrice : Math.round(variant.price * 0.70 * 100) / 100;
+
       orderItemData.push({
         variantId: variant.id,
         productName: variant.product ? variant.product.name : 'Fresh Produce Item',
         variantName: `${variant.weight} (${variant.unit})`,
         unitPrice: variant.price,
+        costPrice: unitCost,
         quantity: quantity,
         totalPrice: itemTotal,
       });
+
+      // Auto-decrement variant stock
+      try {
+        await prisma.productVariant.update({
+          where: { id: variant.id },
+          data: {
+            stock: Math.max(0, variant.stock - quantity),
+          },
+        });
+      } catch (stockErr) {
+        console.error('Failed to update stock:', stockErr);
+      }
     }
 
     let discountAmount = 0;
