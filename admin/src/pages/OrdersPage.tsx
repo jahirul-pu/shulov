@@ -26,16 +26,29 @@ export const OrdersPage: React.FC = () => {
     };
   }, []);
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, status: newStatus } : o))
     );
+
+    try {
+      await fetch(`http://localhost:5000/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('shulov_token') || ''}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (err) {
+      console.error('Failed to persist order status update:', err);
+    }
   };
 
   const columns = [
-    { key: 'PENDING', title: 'New Orders', color: 'bg-amber-50 text-amber-800 border-amber-200' },
-    { key: 'PROCESSING', title: 'Being Packed', color: 'bg-sky-50 text-sky-800 border-sky-200' },
-    { key: 'OUT_FOR_DELIVERY', title: 'Out for Delivery', color: 'bg-purple-50 text-purple-800 border-purple-200' },
+    { key: 'PENDING', title: 'Order Received', color: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { key: 'PROCESSING', title: 'Processing', color: 'bg-sky-50 text-sky-800 border-sky-200' },
+    { key: 'HANDED_TO_COURIER', title: 'Handed to Courier', color: 'bg-purple-50 text-purple-800 border-purple-200' },
     { key: 'DELIVERED', title: 'Delivered', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
   ];
 
@@ -57,7 +70,15 @@ export const OrdersPage: React.FC = () => {
       {/* Kanban Columns Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {columns.map((col) => {
-          const colOrders = orders.filter((o) => o.status === col.key);
+          const colOrders = orders.filter((o) => {
+            if (col.key === 'HANDED_TO_COURIER') {
+              return o.status === 'HANDED_TO_COURIER' || o.status === 'OUT_FOR_DELIVERY';
+            }
+            if (col.key === 'PROCESSING') {
+              return o.status === 'PROCESSING' || o.status === 'PACKED';
+            }
+            return o.status === col.key;
+          });
 
           return (
             <div key={col.key} className="bg-slate-100/60 p-4 rounded-3xl border border-slate-200/80 space-y-4 min-h-[600px] flex flex-col">
@@ -83,7 +104,7 @@ export const OrdersPage: React.FC = () => {
                     <div className="space-y-1 text-xs text-slate-600">
                       <div className="flex items-center gap-1.5 font-bold text-slate-800">
                         <User className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{ord.user ? ord.user.name : 'Rahim Chowdhury'}</span>
+                        <span>{ord.user ? ord.user.name : 'Valued Customer'}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -94,13 +115,13 @@ export const OrdersPage: React.FC = () => {
                     {/* Status Dropdown */}
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                       <select
-                        value={ord.status}
+                        value={ord.status === 'OUT_FOR_DELIVERY' ? 'HANDED_TO_COURIER' : ord.status === 'PACKED' ? 'PROCESSING' : ord.status}
                         onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                        className="text-[11px] font-bold py-1 px-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-brand-500"
+                        className="text-[11px] font-bold py-1 px-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-brand-500 cursor-pointer"
                       >
-                        <option value="PENDING">Pending</option>
+                        <option value="PENDING">Order Received</option>
                         <option value="PROCESSING">Processing</option>
-                        <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                        <option value="HANDED_TO_COURIER">Handed to Courier</option>
                         <option value="DELIVERED">Delivered</option>
                       </select>
 

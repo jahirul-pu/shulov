@@ -87,19 +87,28 @@ router.get('/orders', async (req, res) => {
   }
 });
 
-// Update Order Status (Kanban transition)
-router.patch('/orders/:id/status', async (req, res) => {
+// Update Order Status (Kanban transition - PATCH & PUT)
+const updateOrderStatusHandler = async (req: any, res: any) => {
   try {
     const { id } = req.params;
     const { status, driverId } = req.body;
 
-    const validStatuses = ['PENDING', 'PROCESSING', 'PACKED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'PROCESSING', 'HANDED_TO_COURIER', 'PACKED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid order status' });
     }
 
+    // Support lookup by UUID id or orderNumber string
+    let orderToUpdate = await prisma.order.findFirst({
+      where: { OR: [{ id }, { orderNumber: id }] },
+    });
+
+    if (!orderToUpdate) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
     const order = await prisma.order.update({
-      where: { id },
+      where: { id: orderToUpdate.id },
       data: {
         status,
         ...(driverId ? { driverId } : {}),
@@ -111,14 +120,19 @@ router.patch('/orders/:id/status', async (req, res) => {
     const io = req.app.get('io');
     if (io) {
       io.emit(`order-status-${order.id}`, { status: order.status, order });
+      io.emit(`order-status-${order.orderNumber}`, { status: order.status, order });
       io.emit('order-updated', order);
     }
 
     return res.json({ order });
   } catch (error) {
+    console.error('Update order status error:', error);
     return res.status(500).json({ message: 'Failed to update order status' });
   }
-});
+};
+
+router.patch('/orders/:id/status', updateOrderStatusHandler);
+router.put('/orders/:id/status', updateOrderStatusHandler);
 
 // Product CRUD (Create Product with Variant)
 router.post('/products', async (req, res) => {

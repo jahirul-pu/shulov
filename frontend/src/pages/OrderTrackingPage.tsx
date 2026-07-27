@@ -46,13 +46,20 @@ export const OrderTrackingPage: React.FC = () => {
 
   const steps = [
     { key: 'PENDING', label: 'Order Received', icon: Clock, desc: 'We received your grocery order.' },
-    { key: 'PROCESSING', label: 'Being Packed', icon: PackageCheck, desc: 'Fresh produce checked & packed in insulated bag.' },
-    { key: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', icon: Truck, desc: 'Rider is en route to your address.' },
+    { key: 'PROCESSING', label: 'Processing', icon: PackageCheck, desc: 'Order is being checked & packed.' },
+    { key: 'HANDED_TO_COURIER', label: 'Handed to Courier', icon: Truck, desc: 'Package handed over to courier fleet.' },
     { key: 'DELIVERED', label: 'Delivered', icon: CheckCircle2, desc: 'Package handed over to recipient.' },
   ];
 
-  const currentStepIndex = steps.findIndex((s) => s.key === orderStatus);
-  const activeStep = currentStepIndex >= 0 ? currentStepIndex : 1;
+  const normalizedStatus =
+    orderStatus === 'OUT_FOR_DELIVERY' || orderStatus === 'HANDED_TO_COURIER'
+      ? 'HANDED_TO_COURIER'
+      : orderStatus === 'PACKED'
+      ? 'PROCESSING'
+      : orderStatus;
+
+  const currentStepIndex = steps.findIndex((s) => s.key === normalizedStatus);
+  const activeStep = currentStepIndex >= 0 ? currentStepIndex : 0;
 
   const customerName = order?.user?.name || 'Valued Customer';
   const customerAddress = order?.deliveryAddress || 'Address specified at checkout';
