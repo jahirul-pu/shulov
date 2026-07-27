@@ -77,8 +77,8 @@ export const OrdersPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="font-extrabold text-2xl text-slate-900 tracking-tight">Order Fulfillment Kanban</h1>
-          <p className="text-xs text-slate-500 mt-1">Real-time status workflow for packing, rider dispatch and delivery.</p>
+          <h1 className="font-extrabold text-2xl text-slate-900 tracking-tight">Orders</h1>
+          <p className="text-xs text-slate-500 mt-1">Real-time order management, packing slip printing, and fulfillment workflow.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
