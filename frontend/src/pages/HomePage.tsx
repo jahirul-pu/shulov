@@ -4,7 +4,7 @@ import { CategoryGrid } from '../components/home/CategoryGrid';
 import { FlashDeals } from '../components/home/FlashDeals';
 import { ProductCard } from '../components/product/ProductCard';
 import { Product } from '../types';
-import { Sparkles, ArrowRight, ShieldCheck, HeartHandshake, Award } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, HeartHandshake, Award, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const HomePage: React.FC = () => {
@@ -107,6 +107,65 @@ export const HomePage: React.FC = () => {
           <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
             <HeartHandshake className="w-5 h-5 text-emerald-500" />
             <span>Direct Farm Sourcing</span>
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden space-y-8">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute left-0 bottom-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/20 border border-brand-400/30 text-brand-300 text-xs font-extrabold uppercase tracking-wider">
+              <Leaf className="w-3.5 h-3.5" />
+              <span>About Shulov Fresh</span>
+            </div>
+
+            <h2 className="font-extrabold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight leading-tight">
+              Bringing Farm-Fresh Organic Goodness Direct to Your Home
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Founded with a mission to make 100% chemical-free, organic produce accessible to every household in Bangladesh. We partner directly with over 50+ certified organic farmers across Bogura, Jessore, Sylhet, and Chittagong Hill Tracts to deliver fresh vegetables, pure dairy, raw honey, and pantry staples within hours of harvest.
+            </p>
+
+            <div className="pt-4 grid grid-cols-3 gap-4 border-t border-white/10">
+              <div>
+                <span className="block font-extrabold text-xl sm:text-2xl text-emerald-400">50+</span>
+                <span className="text-[11px] font-semibold text-slate-400">Partner Organic Farms</span>
+              </div>
+              <div>
+                <span className="block font-extrabold text-xl sm:text-2xl text-amber-400">100k+</span>
+                <span className="text-[11px] font-semibold text-slate-400">Happy Families</span>
+              </div>
+              <div>
+                <span className="block font-extrabold text-xl sm:text-2xl text-sky-400">100%</span>
+                <span className="text-[11px] font-semibold text-slate-400">Chemical-Free</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/15">
+              <img
+                src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80"
+                alt="Organic farming sourcing"
+                className="w-full h-64 sm:h-72 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold shrink-0">
+                    <Sparkles className="w-5 h-5 fill-white/20" />
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold text-xs text-white">Harvested Daily</h5>
+                    <p className="text-[10px] text-slate-300">From farm to kitchen in under 24 hours.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
