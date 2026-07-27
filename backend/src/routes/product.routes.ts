@@ -323,12 +323,12 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Remove from memory catalog array
-    const targetMemProd = customProductsCatalog.find((p) => p.id === id || p.slug === id);
-    customProductsCatalog = customProductsCatalog.filter((p) => p.id !== id && p.slug !== id);
+    // Find target product in memory catalog or database
+    const targetMemProd = customProductsCatalog.find(
+      (p) => p.id === id || p.slug === id || (p.name && p.name.toLowerCase().includes(id.toLowerCase()))
+    );
 
-    // Locate product in SQLite database by ID, slug, or matching name
-    let dbProd = await prisma.product.findFirst({
+    const dbProds = await prisma.product.findMany({
       where: {
         OR: [
           { id },
@@ -338,12 +338,36 @@ router.delete('/:id', async (req, res) => {
       },
     });
 
-    if (dbProd) {
+    const targetNames = [
+      ...(targetMemProd ? [targetMemProd.name.toLowerCase()] : []),
+      ...dbProds.map((p) => p.name.toLowerCase()),
+    ];
+
+    const targetIds = [id, ...(targetMemProd ? [targetMemProd.id] : []), ...dbProds.map((p) => p.id)];
+    const targetSlugs = [id, ...(targetMemProd ? [targetMemProd.slug] : []), ...dbProds.map((p) => p.slug)];
+
+    // Remove from memory catalog
+    customProductsCatalog = customProductsCatalog.filter((p) => {
+      const pName = p.name ? p.name.toLowerCase() : '';
+      return (
+        !targetIds.includes(p.id) &&
+        !targetSlugs.includes(p.slug) &&
+        !targetNames.includes(pName)
+      );
+    });
+
+    // Delete order items, reviews, variants and product from SQLite database cleanly
+    for (const dbP of dbProds) {
       try {
-        await prisma.productVariant.deleteMany({ where: { productId: dbProd.id } });
-        await prisma.product.delete({ where: { id: dbProd.id } });
+        const variants = await prisma.productVariant.findMany({ where: { productId: dbP.id } });
+        for (const v of variants) {
+          await prisma.orderItem.deleteMany({ where: { variantId: v.id } });
+        }
+        await prisma.review.deleteMany({ where: { productId: dbP.id } });
+        await prisma.productVariant.deleteMany({ where: { productId: dbP.id } });
+        await prisma.product.delete({ where: { id: dbP.id } });
       } catch (dbErr) {
-        console.error('Error deleting product from SQLite DB:', dbErr);
+        console.error('Error deleting product from DB:', dbErr);
       }
     }
 

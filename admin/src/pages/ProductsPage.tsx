@@ -28,23 +28,8 @@ const categoryNameToSlugMap: Record<string, string> = {
 };
 
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem('shulov_shared_products');
-      return saved ? JSON.parse(saved) : fullDefaultCatalog;
-    } catch {
-      return fullDefaultCatalog;
-    }
-  });
-
-  const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('shulov_hidden_products');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [products, setProducts] = useState<any[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -81,23 +66,17 @@ export const ProductsPage: React.FC = () => {
     fetch('http://localhost:5000/api/products/all-catalog')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data.products) && data.products.length > 0) {
+        if (Array.isArray(data.products)) {
           setProducts(data.products);
         }
       })
       .catch(() => {});
   }, []);
 
-  // Sync products & hiddenIds to localStorage
+  // Sync products update event
   useEffect(() => {
-    localStorage.setItem('shulov_shared_products', JSON.stringify(products));
     window.dispatchEvent(new Event('products_updated'));
   }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('shulov_hidden_products', JSON.stringify(hiddenIds));
-    window.dispatchEvent(new Event('products_updated'));
-  }, [hiddenIds]);
 
   const handleToggleHide = (productId: string) => {
     const isCurrentlyHidden = hiddenIds.includes(productId);
