@@ -198,11 +198,11 @@ router.post('/', async (req: AuthRequest, res) => {
       }
     }
 
-    const { deliveryZone } = req.body;
+    const { deliveryZone, deliveryFee: reqDeliveryFee } = req.body;
     const settings = getStoredDeliverySettings();
-    const deliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? settings.outsideDhaka : settings.insideDhaka;
-    const tax = Math.round(totalAmount * 0.05 * 100) / 100;
-    const netAmount = Math.round((totalAmount - discountAmount + deliveryFee + tax) * 100) / 100;
+    const deliveryFee = reqDeliveryFee !== undefined ? parseFloat(reqDeliveryFee) : (deliveryZone === 'OUTSIDE_DHAKA' ? settings.outsideDhaka : settings.insideDhaka);
+    const tax = 0;
+    const netAmount = Math.round((totalAmount - discountAmount + deliveryFee) * 100) / 100;
 
     const orderNumber = `SHL-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
 

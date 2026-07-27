@@ -167,28 +167,44 @@ export const OrdersPage: React.FC = () => {
 
               <div className="space-y-1">
                 <span className="font-bold text-slate-800">Customer Details:</span>
-                <p>{selectedOrderForInvoice.user?.name || 'Rahim Chowdhury'}</p>
-                <p className="text-slate-500">{selectedOrderForInvoice.deliveryAddress || 'Banani, Dhaka'}</p>
+                <p className="font-semibold text-slate-900">{selectedOrderForInvoice.user?.name || 'Customer'}</p>
+                <p className="text-slate-500">{selectedOrderForInvoice.deliveryAddress || 'Dhaka, Bangladesh'}</p>
               </div>
 
-              <div className="border-t border-b border-slate-100 py-3 space-y-2">
-                <div className="flex justify-between font-bold text-slate-900">
-                  <span>1x Organic Red Apples (1kg)</span>
-                  <span>৳440.00</span>
-                </div>
-                <div className="flex justify-between font-bold text-slate-900">
-                  <span>2x Pasteurized Milk (1L)</span>
-                  <span>৳330.00</span>
-                </div>
-                <div className="flex justify-between font-bold text-slate-900">
-                  <span>1x Free Range Eggs (12 pcs)</span>
-                  <span>৳290.00</span>
-                </div>
+              <div className="border-t border-b border-slate-100 py-3 space-y-2 max-h-48 overflow-y-auto">
+                {selectedOrderForInvoice.items && selectedOrderForInvoice.items.length > 0 ? (
+                  selectedOrderForInvoice.items.map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between font-semibold text-slate-800 text-xs">
+                      <span>
+                        {item.quantity}x {item.productName || 'Grocery Item'} ({item.variantName || 'Pack'})
+                      </span>
+                      <span>৳{(item.totalPrice || item.unitPrice * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-slate-400 font-medium">Standard Grocery Items Package</div>
+                )}
               </div>
 
-              <div className="flex justify-between text-sm font-extrabold text-slate-900 pt-2">
-                <span>Total Amount:</span>
-                <span className="text-brand-600">৳{selectedOrderForInvoice.netAmount || 1060.00}</span>
+              <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                <div className="flex justify-between">
+                  <span>Items Subtotal:</span>
+                  <span className="font-semibold text-slate-800">৳{(selectedOrderForInvoice.totalAmount || 0).toFixed(2)}</span>
+                </div>
+                {selectedOrderForInvoice.discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-semibold">
+                    <span>Discount:</span>
+                    <span>-৳{selectedOrderForInvoice.discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Delivery Charge:</span>
+                  <span className="font-semibold text-slate-800">৳{(selectedOrderForInvoice.deliveryFee || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                  <span>Total Amount:</span>
+                  <span className="text-brand-600">৳{(selectedOrderForInvoice.netAmount || selectedOrderForInvoice.totalAmount || 0).toFixed(2)}</span>
+                </div>
               </div>
 
               <button
