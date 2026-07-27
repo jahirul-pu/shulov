@@ -164,10 +164,10 @@ export const OrdersPage: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <span className="font-bold text-slate-800">Customer Details:</span>
-                <p className="font-semibold text-slate-900">{selectedOrderForInvoice.user?.name || 'Customer'}</p>
-                <p className="text-slate-700 font-bold">Phone: {selectedOrderForInvoice.user?.phone || selectedOrderForInvoice.customerPhone || 'N/A'}</p>
-                <p className="text-slate-500">{selectedOrderForInvoice.deliveryAddress || 'Dhaka, Bangladesh'}</p>
+                <span className="font-extrabold text-slate-900 block border-b border-slate-100 pb-1 uppercase tracking-wider text-[10px]">Customer Details:</span>
+                <p className="font-bold text-slate-900">Name: {selectedOrderForInvoice.user?.name || selectedOrderForInvoice.customerName || 'Customer'}</p>
+                <p className="font-bold text-slate-900">Phone: {selectedOrderForInvoice.user?.phone || selectedOrderForInvoice.customerPhone || 'N/A'}</p>
+                <p className="font-bold text-slate-900">Address: {selectedOrderForInvoice.deliveryAddress || 'Dhaka, Bangladesh'}</p>
               </div>
 
               <div className="border-t border-b border-slate-100 py-3 space-y-2 max-h-48 overflow-y-auto">
