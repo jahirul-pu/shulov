@@ -7,45 +7,33 @@ export const Footer: React.FC = () => {
     <footer className="bg-slate-900 text-slate-300 pt-12 md:pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Features Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pb-12 border-b border-slate-800">
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-            <div className="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center shrink-0">
-              <Truck className="w-6 h-6" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pb-8 border-b border-slate-800">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/40 border border-slate-800/80">
+            <div className="w-9.5 h-9.5 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center shrink-0">
+              <Truck className="w-4.5 h-4.5" />
             </div>
-            <div>
-              <h4 className="font-bold text-white text-sm">Home Delivery All Over Bangladesh</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Reliable doorstep delivery everywhere in BD.</p>
-            </div>
+            <h4 className="font-bold text-white text-xs sm:text-sm leading-snug">Home Delivery All Over Bangladesh</h4>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-              <Leaf className="w-6 h-6" />
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/40 border border-slate-800/80">
+            <div className="w-9.5 h-9.5 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+              <Leaf className="w-4.5 h-4.5" />
             </div>
-            <div>
-              <h4 className="font-bold text-white text-sm">100% Organic Certified</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Directly sourced from trusted farms.</p>
-            </div>
+            <h4 className="font-bold text-white text-xs sm:text-sm leading-snug">100% Organic Certified</h4>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/40 border border-slate-800/80">
+            <div className="w-9.5 h-9.5 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4.5 h-4.5" />
             </div>
-            <div>
-              <h4 className="font-bold text-white text-sm">Best Price Guarantee</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Always fresh at wholesale rates.</p>
-            </div>
+            <h4 className="font-bold text-white text-xs sm:text-sm leading-snug">Best Price Guarantee</h4>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-            <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
-              <RefreshCw className="w-6 h-6" />
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/40 border border-slate-800/80">
+            <div className="w-9.5 h-9.5 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
+              <RefreshCw className="w-4.5 h-4.5" />
             </div>
-            <div>
-              <h4 className="font-bold text-white text-sm">No-Questions Return</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Instant refund if not satisfied.</p>
-            </div>
+            <h4 className="font-bold text-white text-xs sm:text-sm leading-snug">No-Questions Return</h4>
           </div>
         </div>
 

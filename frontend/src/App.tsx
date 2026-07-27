@@ -26,7 +26,7 @@ export const App: React.FC = () => {
       <WishlistProvider>
         <CartProvider>
           <Router>
-            <div className="min-h-screen flex flex-col bg-[#F8FAFC] overflow-x-hidden">
+            <div className="min-h-screen flex flex-col bg-[#F8FAFC] overflow-x-clip">
               <Header />
               <CartDrawer />
               <PromoPopup />

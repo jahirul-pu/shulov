@@ -201,7 +201,8 @@ router.post('/', async (req: AuthRequest, res) => {
 
     const { deliveryZone, deliveryFee: reqDeliveryFee } = req.body;
     const settings = getStoredDeliverySettings();
-    const deliveryFee = reqDeliveryFee !== undefined ? parseFloat(reqDeliveryFee) : (deliveryZone === 'OUTSIDE_DHAKA' ? settings.outsideDhaka : settings.insideDhaka);
+    const initialDeliveryFee = reqDeliveryFee !== undefined ? parseFloat(reqDeliveryFee) : (deliveryZone === 'OUTSIDE_DHAKA' ? settings.outsideDhaka : settings.insideDhaka);
+    const deliveryFee = totalAmount >= 3000 ? 0 : initialDeliveryFee;
     const tax = 0;
     const netAmount = Math.round((totalAmount - discountAmount + deliveryFee) * 100) / 100;
 

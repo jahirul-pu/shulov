@@ -53,8 +53,10 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [user]);
 
-  const activeDeliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? deliverySettings.outsideDhaka : deliverySettings.insideDhaka;
-  const computedNetTotal = Math.round((subtotal - discountAmount + activeDeliveryFee + tax) * 100) / 100;
+  const baseDeliveryFee = deliveryZone === 'OUTSIDE_DHAKA' ? deliverySettings.outsideDhaka : deliverySettings.insideDhaka;
+  const isFreeShippingApplied = subtotal >= 3000;
+  const activeDeliveryFee = isFreeShippingApplied ? 0 : baseDeliveryFee;
+  const computedNetTotal = Math.round((subtotal - discountAmount + activeDeliveryFee) * 100) / 100;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -381,16 +383,17 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between items-center text-slate-600">
                 <span>
                   Delivery Charge ({deliveryZone === 'OUTSIDE_DHAKA' ? 'Outside Dhaka' : 'Inside Dhaka'}):
                 </span>
-                <span className="font-extrabold text-slate-900">৳{activeDeliveryFee.toFixed(2)}</span>
-              </div>
-
-              <div className="flex justify-between text-slate-600">
-                <span>VAT / Tax (5%):</span>
-                <span className="font-semibold text-slate-900">৳{tax.toFixed(2)}</span>
+                {isFreeShippingApplied ? (
+                  <span className="font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200 text-xs">
+                    FREE (Orders &gt; ৳3,000)
+                  </span>
+                ) : (
+                  <span className="font-extrabold text-slate-900">৳{activeDeliveryFee.toFixed(2)}</span>
+                )}
               </div>
 
               <div className="flex justify-between text-base font-extrabold text-slate-900 pt-3 border-t border-slate-100">

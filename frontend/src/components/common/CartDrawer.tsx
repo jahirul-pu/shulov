@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, Trash2, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Plus, Minus, ArrowRight, Truck, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getPrimaryProductImage } from '../../utils/image';
 
@@ -18,6 +18,10 @@ export const CartDrawer: React.FC = () => {
   } = useCart();
 
   if (!isCartOpen) return null;
+
+  const FREE_SHIPPING_THRESHOLD = 3000;
+  const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingPercent = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -53,6 +57,31 @@ export const CartDrawer: React.FC = () => {
 
           {/* Cart Item List */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {/* Free Shipping Progress Tracker */}
+            {cart.length > 0 && (
+              <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 rounded-2xl border border-emerald-200/80 space-y-2 shadow-xs">
+                <div className="flex items-center justify-between text-xs">
+                  {subtotal >= FREE_SHIPPING_THRESHOLD ? (
+                    <span className="font-extrabold text-emerald-700 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-emerald-600 fill-emerald-500/20 shrink-0" />
+                      🎉 You've unlocked FREE Express Delivery!
+                    </span>
+                  ) : (
+                    <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
+                      Add <strong className="text-emerald-700 font-extrabold">৳{amountNeeded.toFixed(0)}</strong> more for FREE Delivery!
+                    </span>
+                  )}
+                  <span className="font-extrabold text-emerald-700 text-[11px]">{freeShippingPercent}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                    style={{ width: `${freeShippingPercent}%` }}
+                  />
+                </div>
+              </div>
+            )}
             {cart.length === 0 ? (
               <div className="text-center py-16 space-y-4">
                 <div className="w-20 h-20 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">

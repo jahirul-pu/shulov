@@ -12,6 +12,7 @@ import {
   Sparkles,
   X,
   Check,
+  Truck,
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -101,8 +102,14 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-sm">
-
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-md transition-all">
+      {/* Prominent Free Shipping Top Announcement Bar */}
+      <div className="bg-gradient-to-r from-emerald-600 via-brand-600 to-emerald-700 text-white text-[11px] sm:text-xs font-bold py-1.5 px-4 text-center flex items-center justify-center gap-2 shadow-xs">
+        <Truck className="w-4 h-4 text-amber-300 animate-bounce shrink-0" />
+        <span>
+          FREE Express Shipping on all orders over <strong className="underline decoration-amber-300 decoration-2 font-extrabold text-amber-300">৳3,000</strong>!
+        </span>
+      </div>
 
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-6">
