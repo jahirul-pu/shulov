@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 
 export const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('all');
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any | null>(null);
 
   useEffect(() => {
@@ -43,6 +44,27 @@ export const OrdersPage: React.FC = () => {
     }
   };
 
+  const filteredOrders = orders.filter((o) => {
+    if (selectedTimeRange === 'all') return true;
+    if (!o.createdAt) return true;
+    const orderDate = new Date(o.createdAt);
+    const now = new Date();
+
+    if (selectedTimeRange === 'today') {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return orderDate >= todayStart;
+    }
+    if (selectedTimeRange === 'week') {
+      const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return orderDate >= weekStart;
+    }
+    if (selectedTimeRange === 'month') {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      return orderDate >= monthStart;
+    }
+    return true;
+  });
+
   const columns = [
     { key: 'PENDING', title: 'Order Received', color: 'bg-amber-50 text-amber-800 border-amber-200' },
     { key: 'PROCESSING', title: 'Processing', color: 'bg-sky-50 text-sky-800 border-sky-200' },
@@ -59,16 +81,36 @@ export const OrdersPage: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">Real-time status workflow for packing, rider dispatch and delivery.</p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>Real-time Socket Broadcasting Active</span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Time Filter Buttons */}
+          <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-[11px] font-bold text-slate-400 px-2 uppercase tracking-wider hidden sm:inline">Filter:</span>
+            {(['today', 'week', 'month', 'all'] as const).map((range) => (
+              <button
+                key={range}
+                onClick={() => setSelectedTimeRange(range)}
+                className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all capitalize ${
+                  selectedTimeRange === range
+                    ? 'bg-brand-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                {range === 'today' ? 'Today' : range === 'week' ? 'This Week' : range === 'month' ? 'This Month' : 'All Time'}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span>Live Broadcasting</span>
+          </div>
         </div>
       </div>
 
       {/* Kanban Columns Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {columns.map((col) => {
-          const colOrders = orders.filter((o) => {
+          const colOrders = filteredOrders.filter((o) => {
             if (col.key === 'HANDED_TO_COURIER') {
               return o.status === 'HANDED_TO_COURIER' || o.status === 'OUT_FOR_DELIVERY';
             }
