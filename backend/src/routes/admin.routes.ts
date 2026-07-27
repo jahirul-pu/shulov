@@ -280,4 +280,113 @@ router.put('/users/:id', async (req, res) => {
   }
 });
 
+// GET /api/admin/coupons
+router.get('/coupons', async (req, res) => {
+  try {
+    let coupons = await prisma.coupon.findMany({
+      orderBy: { validUntil: 'desc' },
+    });
+
+    if (coupons.length === 0) {
+      const now = new Date();
+      const future = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      await prisma.coupon.createMany({
+        data: [
+          {
+            code: 'WELCOME20',
+            discountType: 'PERCENTAGE',
+            discountValue: 20,
+            minOrderValue: 150,
+            validUntil: future,
+            isActive: true,
+          },
+          {
+            code: 'FRESH50',
+            discountType: 'FLAT',
+            discountValue: 50,
+            minOrderValue: 250,
+            validUntil: future,
+            isActive: true,
+          },
+        ],
+      });
+      coupons = await prisma.coupon.findMany({ orderBy: { validUntil: 'desc' } });
+    }
+
+    return res.json({ coupons });
+  } catch (error) {
+    console.error('Fetch coupons error:', error);
+    return res.status(500).json({ message: 'Failed to fetch coupons' });
+  }
+});
+
+// POST /api/admin/coupons
+router.post('/coupons', async (req, res) => {
+  try {
+    const { code, discountType, discountValue, minOrderValue, maxDiscount, validUntil, isActive } = req.body;
+
+    if (!code || !discountValue || !validUntil) {
+      return res.status(400).json({ message: 'Code, discount value, and expiration date/time are required' });
+    }
+
+    const coupon = await prisma.coupon.create({
+      data: {
+        code: code.trim().toUpperCase(),
+        discountType: discountType || 'PERCENTAGE',
+        discountValue: parseFloat(discountValue),
+        minOrderValue: parseFloat(minOrderValue || 0),
+        maxDiscount: maxDiscount ? parseFloat(maxDiscount) : null,
+        validUntil: new Date(validUntil),
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
+      },
+    });
+
+    return res.status(201).json({ coupon });
+  } catch (error: any) {
+    console.error('Create coupon error:', error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Coupon code already exists' });
+    }
+    return res.status(500).json({ message: 'Failed to create coupon' });
+  }
+});
+
+// PUT /api/admin/coupons/:id
+router.put('/coupons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { code, discountType, discountValue, minOrderValue, maxDiscount, validUntil, isActive } = req.body;
+
+    const coupon = await prisma.coupon.update({
+      where: { id },
+      data: {
+        ...(code ? { code: code.trim().toUpperCase() } : {}),
+        ...(discountType ? { discountType } : {}),
+        ...(discountValue !== undefined ? { discountValue: parseFloat(discountValue) } : {}),
+        ...(minOrderValue !== undefined ? { minOrderValue: parseFloat(minOrderValue) } : {}),
+        ...(maxDiscount !== undefined ? { maxDiscount: maxDiscount ? parseFloat(maxDiscount) : null } : {}),
+        ...(validUntil ? { validUntil: new Date(validUntil) } : {}),
+        ...(isActive !== undefined ? { isActive: Boolean(isActive) } : {}),
+      },
+    });
+
+    return res.json({ coupon });
+  } catch (error) {
+    console.error('Update coupon error:', error);
+    return res.status(500).json({ message: 'Failed to update coupon' });
+  }
+});
+
+// DELETE /api/admin/coupons/:id
+router.delete('/coupons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.coupon.delete({ where: { id } });
+    return res.json({ message: 'Coupon deleted successfully' });
+  } catch (error) {
+    console.error('Delete coupon error:', error);
+    return res.status(500).json({ message: 'Failed to delete coupon' });
+  }
+});
+
 export default router;
